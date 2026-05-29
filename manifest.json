@@ -1,13 +1,13 @@
 {
-  "name": "Tarefas Pedro",
-  "short_name": "Tarefas",
-  "description": "Gestão de tarefas e gastos — Loftcare, aluGO, Stays",
+  "name": "Hub Pedro",
+  "short_name": "Hub Pedro",
+  "description": "Hub Pedro — Gestão de tarefas e gastos · Loftcare · aluGO · Stays",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0B0D0A",
-  "theme_color": "#0B0D0A",
+  "background_color": "#080C14",
+  "theme_color": "#080C14",
   "lang": "pt-BR",
   "categories": ["productivity", "business"],
   "icons": [

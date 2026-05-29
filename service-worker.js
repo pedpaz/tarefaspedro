@@ -1,6 +1,6 @@
 // Service Worker — Tarefas Pedro
 // Cache version: bump quando atualizar para forçar refresh
-const CACHE = 'tarefas-pedro-v2';
+const CACHE = 'hub-pedro-v3';
 const FILES = [
   './',
   './index.html',
