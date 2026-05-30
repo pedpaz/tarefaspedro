@@ -1217,7 +1217,185 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 }
 .exp-modal-list{max-height:220px;overflow-y:auto;margin:14px 0 0;}
 
-/* BACKUP / CONFIG */
+/* SUB-TAREFAS (checklist) */
+.subtasks-list{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+.subtask-item{
+  display:flex;align-items:center;gap:9px;
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:8px 10px;
+}
+.subtask-checkbox{
+  flex-shrink:0;
+  width:18px;height:18px;
+  border-radius:5px;
+  border:2px solid var(--dim-2);
+  background:transparent;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;
+  color:var(--paper);
+  font-weight:900;
+  transition:all .15s;
+}
+.subtask-checkbox.checked{background:var(--brand);border-color:var(--brand);}
+.subtask-input{
+  flex:1;
+  border:none;background:transparent;outline:none;
+  color:var(--ink);font-size:13px;
+  font-family:var(--font-body);
+}
+.subtask-input.checked{text-decoration:line-through;color:var(--dim);}
+.subtask-del{
+  background:none;border:none;color:var(--dim-2);
+  font-size:15px;cursor:pointer;
+  padding:2px 6px;border-radius:5px;line-height:1;
+}
+.subtask-del:hover{color:#FF6B6B;background:rgba(255,107,107,.1);}
+.btn-add-subtask{
+  margin-top:6px;
+  background:transparent;
+  border:1.5px dashed var(--line);
+  border-radius:9px;
+  padding:8px;
+  color:var(--brand);
+  font-family:var(--font-display);
+  font-size:11px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;
+  cursor:pointer;
+  transition:all .15s;
+  width:100%;
+}
+.btn-add-subtask:hover{border-color:var(--brand);background:var(--brand-tint);}
+
+/* Sub-tarefas no CARD (read-only display) */
+.card-subtasks{
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px dashed var(--line-soft);
+  display:flex;flex-direction:column;gap:4px;
+}
+.card-subtask{
+  display:flex;align-items:center;gap:7px;
+  font-size:12px;
+  color:var(--ink-2);
+  cursor:pointer;
+}
+.card-subtask-cb{
+  width:14px;height:14px;
+  border-radius:4px;
+  border:1.5px solid var(--dim-2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--paper);font-weight:900;
+  flex-shrink:0;
+  transition:all .15s;
+}
+.card-subtask-cb.checked{background:var(--brand);border-color:var(--brand);}
+.card-subtask-text.checked{text-decoration:line-through;color:var(--dim-2);}
+.card-subtask-count{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--font-display);font-size:10px;font-weight:700;
+  color:var(--brand);
+  background:var(--brand-tint);
+  border:1px solid rgba(61,169,252,.25);
+  border-radius:99px;
+  padding:2px 7px;
+  letter-spacing:.04em;
+}
+
+/* MODO SELEÇÃO EM MASSA */
+.select-toggle{
+  background:var(--surf);
+  border:1px solid var(--line);
+  border-radius:99px;
+  padding:7px 14px;
+  font-family:var(--font-display);
+  font-size:10.5px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;
+  color:var(--dim);
+  cursor:pointer;
+  transition:all .15s;
+  margin-bottom:12px;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.select-toggle:hover{color:var(--ink);border-color:var(--dim-2);}
+.select-toggle.on{
+  background:var(--brand-tint);
+  border-color:var(--brand);
+  color:var(--brand);
+}
+.task-card.selectable{padding-left:46px;position:relative;cursor:pointer;}
+.task-card.selectable .card-select{
+  position:absolute;
+  left:14px;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;
+  border-radius:6px;
+  border:2px solid var(--dim-2);
+  background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--paper);font-weight:900;
+  transition:all .15s;
+}
+.task-card.selectable.selected{
+  background:var(--brand-tint);
+  border-color:var(--brand);
+}
+.task-card.selectable.selected .card-select{
+  background:var(--brand);
+  border-color:var(--brand);
+}
+.task-card.selectable .chk-box{display:none;}
+.mass-toolbar{
+  position:fixed;
+  bottom:78px;left:18px;right:18px;
+  background:var(--surf);
+  border:1px solid var(--brand);
+  border-radius:14px;
+  padding:12px 14px;
+  box-shadow:0 -6px 24px rgba(0,0,0,.6),0 0 20px rgba(61,169,252,.25);
+  display:none;
+  align-items:center;gap:10px;
+  z-index:100;
+  animation:fadeUp .3s ease;
+}
+.mass-toolbar.on{display:flex;}
+.mass-count{
+  font-family:var(--font-display);font-size:12px;font-weight:800;
+  color:var(--brand);flex:1;letter-spacing:-.01em;
+}
+.mass-btn{
+  border:none;border-radius:9px;
+  padding:10px 14px;
+  font-family:var(--font-display);
+  font-size:11px;font-weight:800;
+  letter-spacing:.05em;text-transform:uppercase;
+  cursor:pointer;
+}
+.mass-btn-go{background:var(--brand);color:var(--paper);}
+.mass-btn-cancel{background:var(--surf-2);color:var(--dim);border:1px solid var(--line);}
+
+/* ALERTAS DE PRAZO no card */
+.task-card.alert-overdue{
+  background:linear-gradient(180deg,rgba(255,107,107,.06),var(--surf));
+  border-color:rgba(255,107,107,.35);
+}
+.task-card.alert-today{
+  background:linear-gradient(180deg,rgba(245,185,98,.05),var(--surf));
+  border-color:rgba(245,185,98,.3);
+}
+
+/* BOTÃO COMPARTILHAR (no card) */
+.btn-share{
+  background:none;border:none;
+  color:var(--dim-2);font-size:15px;
+  padding:4px 6px;border-radius:5px;
+  cursor:pointer;line-height:1;
+  transition:all .15s;
+}
+.btn-share:hover{color:var(--brand);background:var(--brand-tint);}
+
+
 .backup-section{
   background:var(--surf-2);
   border:1px solid var(--line);
@@ -1348,6 +1526,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <button class="df-chip" data-df="month">Este mês</button>
     <button class="df-chip" data-df="noprazo">Sem prazo</button>
   </div>
+  <button class="select-toggle" data-tab="all">☑ Selecionar</button>
   <div id="l-all-grouped"></div>
 </div>
 <div class="panel" id="panel-loft">
@@ -1355,6 +1534,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <div class="prog-top"><span>Loftcare</span><span id="pt-loft">0/0</span></div>
     <div class="prog-bar"><div class="prog-fill pf-loft" id="pb-loft"></div></div>
   </div>
+  <button class="select-toggle" data-tab="loft">☑ Selecionar</button>
   <div id="l-loft-p"></div><div id="l-loft-d"></div>
 </div>
 <div class="panel" id="panel-alug">
@@ -1362,6 +1542,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <div class="prog-top"><span>aluGO</span><span id="pt-alug">0/0</span></div>
     <div class="prog-bar"><div class="prog-fill pf-alug" id="pb-alug"></div></div>
   </div>
+  <button class="select-toggle" data-tab="alug">☑ Selecionar</button>
   <div id="l-alug-p"></div><div id="l-alug-d"></div>
 </div>
 <div class="panel" id="panel-stay">
@@ -1369,6 +1550,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <div class="prog-top"><span>Stays</span><span id="pt-stay">0/0</span></div>
     <div class="prog-bar"><div class="prog-fill pf-stay" id="pb-stay"></div></div>
   </div>
+  <button class="select-toggle" data-tab="stay">☑ Selecionar</button>
   <div id="l-stay-p"></div><div id="l-stay-d"></div>
 </div>
 <div class="panel" id="panel-gastos">
@@ -1379,6 +1561,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   <div id="gs-pending-section"></div>
   <div id="gs-ready-section"></div>
   <div id="gs-exported-section"></div>
+</div>
+
+<div class="mass-toolbar" id="mass-toolbar">
+  <div class="mass-count" id="mass-count">0 selecionada(s)</div>
+  <button class="mass-btn mass-btn-cancel" id="mass-cancel">Cancelar</button>
+  <button class="mass-btn mass-btn-go" id="mass-go">✓ Concluir</button>
 </div>
 
 <button class="fab" id="fabBtn">+</button>
@@ -1398,6 +1586,9 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <input class="finput" id="f-local" type="text" placeholder="Digite o local…" style="margin-top:6px;display:none;">
     <label class="flabel">Observação</label>
     <textarea class="finput" id="f-obs" placeholder="Detalhes adicionais…"></textarea>
+    <label class="flabel">Sub-itens (checklist)</label>
+    <div id="f-subtasks-list" class="subtasks-list"></div>
+    <button type="button" class="btn-add-subtask" id="f-add-subtask">+ Adicionar sub-item</button>
     <label class="flabel">Responsável (opcional)</label>
     <select class="finput" id="f-pessoa">
       <option value="">— Sem responsável —</option>
@@ -1502,6 +1693,9 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   <div class="modal">
     <div class="modal-handle"></div>
     <h2>Editar Tarefa</h2>
+    <div id="edit-export-warn" style="display:none;background:rgba(245,185,98,.08);border:1px solid rgba(245,185,98,.3);border-radius:11px;padding:11px 13px;margin-bottom:14px;">
+      <div style="font-size:12px;color:#F5B962;font-weight:600;line-height:1.5;" id="edit-export-text"></div>
+    </div>
     <label class="flabel">Título *</label>
     <input class="finput" id="e-title" type="text" placeholder="Título da tarefa…">
     <label class="flabel">Imóvel / Local</label>
@@ -1512,6 +1706,9 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <input class="finput" id="e-local" type="text" placeholder="Digite o local…" style="margin-top:6px;display:none;">
     <label class="flabel">Observação</label>
     <textarea class="finput" id="e-obs" placeholder="Detalhes adicionais…"></textarea>
+    <label class="flabel">Sub-itens (checklist)</label>
+    <div id="e-subtasks-list" class="subtasks-list"></div>
+    <button type="button" class="btn-add-subtask" id="e-add-subtask">+ Adicionar sub-item</button>
     <label class="flabel">Responsável (opcional)</label>
     <select class="finput" id="e-pessoa">
       <option value="">— Sem responsável —</option>
@@ -1671,6 +1868,184 @@ var gastos  = loadG();
 var pessoas = loadP();
 var locais  = migrateLocais(loadL());
 var predios = loadB();
+
+/* ═══════════════════════════════════════════════════
+   SMART MIGRATION — Portfólio oficial Pedro
+   Runs ONCE: cadastra 10 prédios + 17 imóveis e
+   tenta renomear tarefas/gastos antigos pros nomes oficiais.
+   ═══════════════════════════════════════════════════ */
+var MIG_KEY = 'pedro_migrated_portfolio_v1';
+function runPortfolioMigration(){
+  if(localStorage.getItem(MIG_KEY)) return; // já rodou
+
+  // 1. Prédios oficiais (10)
+  var officialPredios = [
+    'Walk Bueno',
+    'Crystal Place',
+    'Citzen',
+    'Sidney Metropolitan',
+    'Dna Smart',
+    'New Wave',
+    'Hotel QS Marista',
+    'Tai Residencial',
+    'Zurick',
+    'Aldeia do Lago'
+  ];
+
+  // 2. Imóveis oficiais (17) — nome curto "NUMERO Prédio"
+  var officialLocais = [
+    {nome:'2903 Walk Bueno',  predio:'Walk Bueno'},
+    {nome:'911 Crystal',      predio:'Crystal Place'},
+    {nome:'1113 Crystal',     predio:'Crystal Place'},
+    {nome:'2413 Crystal',     predio:'Crystal Place'},
+    {nome:'209 Crystal',      predio:'Crystal Place'},
+    {nome:'1313 Crystal',     predio:'Crystal Place'},
+    {nome:'1202O Sidney',     predio:'Sidney Metropolitan'},
+    {nome:'504T Sidney',      predio:'Sidney Metropolitan'},
+    {nome:'407B Dna Smart',   predio:'Dna Smart'},
+    {nome:'103A Aldeia',      predio:'Aldeia do Lago'},
+    {nome:'1310 QS',          predio:'Hotel QS Marista'},
+    {nome:'803S Tai',         predio:'Tai Residencial'},
+    {nome:'9 Zurick',         predio:'Zurick'},
+    {nome:'2503 Citzen',      predio:'Citzen'},
+    {nome:'2504 Citzen',      predio:'Citzen'},
+    {nome:'2603 Citzen',      predio:'Citzen'},
+    {nome:'2201 New Wave',    predio:'New Wave'}
+  ];
+
+  // 3. Build rename map: old name (lowercased) → new name
+  // Strategy: match by apartment number prefix (most reliable)
+  // Falls back to building-name fuzzy match
+  function normalize(s){
+    return String(s||'').toLowerCase()
+      .replace(/[áàâã]/g,'a').replace(/[éê]/g,'e').replace(/[íî]/g,'i')
+      .replace(/[óôõ]/g,'o').replace(/[ú]/g,'u').replace(/[ç]/g,'c')
+      .replace(/[^a-z0-9]/g,'').trim();
+  }
+
+  function findOfficialMatch(oldName){
+    if(!oldName) return null;
+    var norm = normalize(oldName);
+    // Try exact normalized match first (already correct)
+    for(var i=0;i<officialLocais.length;i++){
+      if(normalize(officialLocais[i].nome) === norm) return officialLocais[i].nome;
+    }
+    // Extract apartment "number" (digits + optional letters): 1113, 504T, 1202O, 103A, 407B, 803S
+    var aptMatch = oldName.match(/(\d+[A-Za-z]?)/);
+    if(aptMatch){
+      var aptCode = aptMatch[1].toUpperCase();
+      for(var i=0;i<officialLocais.length;i++){
+        var officialApt = officialLocais[i].nome.split(' ')[0].toUpperCase();
+        if(officialApt === aptCode) return officialLocais[i].nome;
+      }
+    }
+    // Fuzzy building-name match (last resort)
+    var fuzzyMap = [
+      ['walkbueno', '2903 Walk Bueno'],
+      ['sidney',    null], // requires apt number — handled above
+      ['dnasmart',  '407B Dna Smart'],
+      ['aldeia',    '103A Aldeia'],
+      ['qsmarista', '1310 QS'],
+      ['tairesidencial', '803S Tai'],
+      ['zurick',    '9 Zurick'],
+      ['zurich',    '9 Zurick'],
+      ['newwave',   '2201 New Wave']
+    ];
+    for(var i=0;i<fuzzyMap.length;i++){
+      if(fuzzyMap[i][1] && norm.indexOf(fuzzyMap[i][0])!==-1) return fuzzyMap[i][1];
+    }
+    return null;
+  }
+
+  // 4. Build rename map for existing locais used in tasks/gastos
+  var renameMap = {};
+  var unmatched = [];
+  for(var i=0;i<tasks.length;i++){
+    if(tasks[i].local && !renameMap[tasks[i].local]){
+      var match = findOfficialMatch(tasks[i].local);
+      if(match) renameMap[tasks[i].local] = match;
+      else unmatched.push(tasks[i].local);
+    }
+  }
+  for(var i=0;i<gastos.length;i++){
+    if(gastos[i].local && !renameMap[gastos[i].local]){
+      var match = findOfficialMatch(gastos[i].local);
+      if(match) renameMap[gastos[i].local] = match;
+      else if(unmatched.indexOf(gastos[i].local)===-1) unmatched.push(gastos[i].local);
+    }
+  }
+  // Also check current locais list
+  for(var i=0;i<locais.length;i++){
+    if(locais[i].nome && !renameMap[locais[i].nome]){
+      var match = findOfficialMatch(locais[i].nome);
+      if(match && match !== locais[i].nome) renameMap[locais[i].nome] = match;
+    }
+  }
+
+  // 5. Apply renames to tasks
+  for(var i=0;i<tasks.length;i++){
+    if(tasks[i].local && renameMap[tasks[i].local]){
+      tasks[i].local = renameMap[tasks[i].local];
+    }
+  }
+  // 6. Apply renames to gastos
+  for(var i=0;i<gastos.length;i++){
+    if(gastos[i].local && renameMap[gastos[i].local]){
+      gastos[i].local = renameMap[gastos[i].local];
+    }
+  }
+
+  // 7. Merge prédios — add officials that don't exist yet
+  for(var i=0;i<officialPredios.length;i++){
+    if(predios.indexOf(officialPredios[i]) === -1){
+      predios.push(officialPredios[i]);
+    }
+  }
+
+  // 8. Merge locais — add officials that don't exist
+  for(var i=0;i<officialLocais.length;i++){
+    var found = false;
+    for(var j=0;j<locais.length;j++){
+      if(locais[j].nome === officialLocais[i].nome){
+        // Ensure predio is linked correctly
+        locais[j].predio = officialLocais[i].predio;
+        found = true; break;
+      }
+    }
+    if(!found) locais.push({nome:officialLocais[i].nome, predio:officialLocais[i].predio});
+  }
+
+  // 9. Remove orphan locais that were renamed (their names no longer exist in any task/gasto)
+  var inUse = {};
+  for(var i=0;i<tasks.length;i++) if(tasks[i].local) inUse[tasks[i].local] = 1;
+  for(var i=0;i<gastos.length;i++) if(gastos[i].local) inUse[gastos[i].local] = 1;
+  var officialSet = {};
+  for(var i=0;i<officialLocais.length;i++) officialSet[officialLocais[i].nome] = 1;
+  locais = locais.filter(function(l){
+    return officialSet[l.nome] || inUse[l.nome]; // keep officials + any custom still used
+  });
+
+  // 10. Save everything
+  savT(); savG(); savL(); savB();
+  try{ localStorage.setItem(MIG_KEY, JSON.stringify({
+    ranAt: Date.now(),
+    renamedCount: Object.keys(renameMap).length,
+    renameMap: renameMap,
+    unmatched: unmatched
+  })); }catch(e){}
+
+  // 11. Show toast if there were renames or unmatched
+  if(Object.keys(renameMap).length > 0 || unmatched.length > 0){
+    setTimeout(function(){
+      var msg = '✓ Portfólio atualizado';
+      if(Object.keys(renameMap).length) msg += ' · ' + Object.keys(renameMap).length + ' renomeado(s)';
+      if(unmatched.length) msg += ' · ' + unmatched.length + ' sem match';
+      if(typeof showToast === 'function') showToast(msg);
+    }, 1000);
+  }
+}
+runPortfolioMigration();
+
 var activeTab    = 'all';
 var activeDF     = 'all';
 var searchQuery  = '';
@@ -1683,6 +2058,14 @@ var pickCC       = '';
 var costTargetId = null;
 var delTargetId  = null;
 var expTargetCC  = null;
+
+/* Subtasks temp arrays (used during modal session) */
+var tempSubtasksF = [];
+var tempSubtasksE = [];
+
+/* Mass selection state */
+var selectMode = false;
+var selectedIds = [];
 
 /* TABS */
 document.getElementById('tabs').addEventListener('click', function(e){
@@ -1903,6 +2286,38 @@ document.getElementById('sf-sort').addEventListener('change', function(e){
 
 /* GLOBAL DELEGATION */
 document.addEventListener('click', function(e){
+  // Share button (must come before del/edit since it lives in same actions row)
+  var shareBtn = e.target.closest('.btn-share');
+  if(shareBtn){ shareTask(shareBtn.dataset.id); return; }
+
+  // Toggle card subtask (display in card, not modal)
+  var cardSub = e.target.closest('.card-subtask');
+  if(cardSub){
+    var tId = cardSub.dataset.task;
+    var sIdx = parseInt(cardSub.dataset.sub,10);
+    for(var i=0;i<tasks.length;i++){
+      if(tasks[i].id===tId && tasks[i].subtasks && tasks[i].subtasks[sIdx]){
+        tasks[i].subtasks[sIdx].done = !tasks[i].subtasks[sIdx].done;
+        savT(); render(); break;
+      }
+    }
+    return;
+  }
+
+  // Selection mode: tap card to select/deselect
+  if(selectMode){
+    var card = e.target.closest('.task-card.selectable');
+    if(card){
+      var id = card.dataset.id;
+      var idx = selectedIds.indexOf(id);
+      if(idx === -1) selectedIds.push(id);
+      else selectedIds.splice(idx,1);
+      updateMassToolbar();
+      render();
+      return;
+    }
+  }
+
   var delBtn = e.target.closest('.btn-del');
   if(delBtn){ openDelConfirm(delBtn.dataset.id); return; }
 
@@ -1948,10 +2363,16 @@ function openNew(){
   document.getElementById('f-custo').value = '';
   document.getElementById('f-prazo').value = '';
   document.getElementById('err-new').style.display = 'none';
+  document.getElementById('err-new').style.background = '';
+  document.getElementById('err-new').style.borderColor = '';
+  document.getElementById('err-new').style.color = '';
+  document.getElementById('btn-save-task').dataset.confirmed = '';
   populatePessoaSelect('f-pessoa', '');
   populateLocalSelect('f', '');
   var opts = document.querySelectorAll('.cc-opt');
   for(var i=0;i<opts.length;i++) opts[i].className='cc-opt';
+  tempSubtasksF = [];
+  renderSubtasksUI('f', tempSubtasksF);
   document.getElementById('ov-new').classList.add('on');
   setTimeout(function(){ document.getElementById('f-title').focus(); }, 220);
 }
@@ -1971,17 +2392,35 @@ document.getElementById('btn-save-task').addEventListener('click', function(){
     err.style.display = 'block';
     return;
   }
+  var localVal = getLocalValue('f');
+  // Warn if Loftcare/aluGO without imóvel
+  if(!localVal && (pickCC==='loft' || pickCC==='alug') && !this.dataset.confirmed){
+    err.innerHTML = '⚠️ Tarefa de <strong>'+CC[pickCC].lbl+'</strong> sem imóvel. Vai para gastos sem código — toque em "Salvar" de novo para confirmar.';
+    err.style.display = 'block';
+    err.style.background = 'rgba(245,185,98,.1)';
+    err.style.borderColor = 'rgba(245,185,98,.4)';
+    err.style.color = '#F5B962';
+    this.dataset.confirmed = '1';
+    return;
+  }
+  this.dataset.confirmed = '';
   err.style.display = 'none';
+  err.style.background = '';
+  err.style.borderColor = '';
+  err.style.color = '';
+  // Capture any pending subtask text in input fields
+  captureSubtaskInputs('f', tempSubtasksF);
   var t = {
     id:    n(),
     cc:    pickCC,
     title: title,
-    local:  getLocalValue('f'),
+    local:  localVal,
     obs:    document.getElementById('f-obs').value.trim(),
     pessoa: document.getElementById('f-pessoa').value,
     prazo:  document.getElementById('f-prazo').value,
     done:  false,
-    ts:    Date.now()
+    ts:    Date.now(),
+    subtasks: tempSubtasksF.slice()
   };
   tasks.unshift(t);
   // Create gasto if cost was provided
@@ -2017,11 +2456,37 @@ function openEdit(id){
   document.getElementById('e-obs').value    = t.obs    || '';
   document.getElementById('e-prazo').value  = t.prazo  || '';
   document.getElementById('err-edit').style.display = 'none';
+  document.getElementById('err-edit').style.background = '';
+  document.getElementById('err-edit').style.borderColor = '';
+  document.getElementById('err-edit').style.color = '';
+  document.getElementById('btn-save-edit').dataset.confirmed = '';
   populatePessoaSelect('e-pessoa', t.pessoa || '');
   populateLocalSelect('e', t.local || '');
-  document.getElementById('err-edit').style.display = 'none';
-  populatePessoaSelect('e-pessoa', t.pessoa || '');
-  document.getElementById('err-edit').style.display = 'none';
+  tempSubtasksE = (t.subtasks || []).map(function(s){ return {text:s.text, done:s.done}; });
+  renderSubtasksUI('e', tempSubtasksE);
+
+  // Check for exported gastos and show warning
+  var exportedCount = 0;
+  var pendingCount  = 0;
+  for(var j=0;j<gastos.length;j++){
+    if(gastos[j].taskId === id){
+      if(gastos[j].exported) exportedCount++;
+      else pendingCount++;
+    }
+  }
+  var warnEl = document.getElementById('edit-export-warn');
+  if(exportedCount > 0){
+    document.getElementById('edit-export-text').innerHTML =
+      '⚠️ Essa tarefa tem <strong>'+exportedCount+' gasto'+(exportedCount!==1?'s':'')+' já exportado'+(exportedCount!==1?'s':'')+'</strong>. Editar vai atualizar o gasto também, mas o CSV anterior não muda.';
+    warnEl.style.display = 'block';
+  } else if(pendingCount > 0){
+    document.getElementById('edit-export-text').innerHTML =
+      '💸 Essa tarefa tem '+pendingCount+' gasto'+(pendingCount!==1?'s':'')+' vinculado'+(pendingCount!==1?'s':'')+'. Alterações de título, local e centro de custo serão aplicadas ao'+(pendingCount!==1?'s':'')+' gasto'+(pendingCount!==1?'s':'')+'.';
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+
   var opts = document.querySelectorAll('#cc-grid-edit .cc-opt');
   for(var i=0;i<opts.length;i++){
     opts[i].className = 'cc-opt' + (opts[i].dataset.cc===editPickCC ? ' '+CC[editPickCC].sel : '');
@@ -2045,18 +2510,52 @@ document.getElementById('btn-save-edit').addEventListener('click', function(){
     err.style.display = 'block';
     return;
   }
+  var newLocal  = getLocalValue('e');
+  // Warn if Loftcare/aluGO without imóvel (unless previously confirmed)
+  if(!newLocal && (editPickCC==='loft' || editPickCC==='alug') && !this.dataset.confirmed){
+    err.innerHTML = '⚠️ Tarefa de <strong>'+CC[editPickCC].lbl+'</strong> sem imóvel. Toque em "Salvar" de novo para confirmar.';
+    err.style.display = 'block';
+    err.style.background = 'rgba(245,185,98,.1)';
+    err.style.borderColor = 'rgba(245,185,98,.4)';
+    err.style.color = '#F5B962';
+    this.dataset.confirmed = '1';
+    return;
+  }
+  this.dataset.confirmed = '';
+  err.style.display = 'none';
+  err.style.background = '';
+  err.style.borderColor = '';
+  err.style.color = '';
+  var newObs    = document.getElementById('e-obs').value.trim();
+  var newPessoa = document.getElementById('e-pessoa').value;
+  var newPrazo  = document.getElementById('e-prazo').value;
+  captureSubtaskInputs('e', tempSubtasksE);
   for(var i=0;i<tasks.length;i++){
     if(tasks[i].id===editTargetId){
       tasks[i].title  = title;
-      tasks[i].local  = getLocalValue('e');
-      tasks[i].obs    = document.getElementById('e-obs').value.trim();
-      tasks[i].pessoa = document.getElementById('e-pessoa').value;
-      tasks[i].prazo  = document.getElementById('e-prazo').value;
+      tasks[i].local  = newLocal;
+      tasks[i].obs    = newObs;
+      tasks[i].pessoa = newPessoa;
+      tasks[i].prazo  = newPrazo;
       tasks[i].cc     = editPickCC;
+      tasks[i].subtasks = tempSubtasksE.slice();
       break;
     }
   }
-  savT(); closeEdit(); render();
+  // Sync linked gastos with new title/local/cc (keep value and exported state)
+  var gastosUpdated = false;
+  for(var j=0;j<gastos.length;j++){
+    if(gastos[j].taskId === editTargetId){
+      gastos[j].title = title;
+      gastos[j].local = newLocal;
+      gastos[j].cc    = editPickCC;
+      gastosUpdated = true;
+    }
+  }
+  savT();
+  if(gastosUpdated) savG();
+  closeEdit();
+  render();
 });
 
 /* Intercept CC click inside edit modal */
@@ -2068,6 +2567,193 @@ document.getElementById('cc-grid-edit').addEventListener('click', function(e){
   for(var i=0;i<opts.length;i++){
     opts[i].className = 'cc-opt' + (opts[i].dataset.cc===editPickCC ? ' '+CC[editPickCC].sel : '');
   }
+});
+
+/* ═══════════════════════════════════════════
+   SUBTASKS — Renderer and handlers
+   ═══════════════════════════════════════════ */
+function renderSubtasksUI(prefix, list){
+  var c = document.getElementById(prefix+'-subtasks-list');
+  if(!c) return;
+  if(list.length === 0){
+    c.innerHTML = '<div style="font-size:11px;color:var(--dim-2);font-style:italic;padding:4px 2px;">Nenhum sub-item ainda</div>';
+    return;
+  }
+  var html = '';
+  for(var i=0;i<list.length;i++){
+    var st = list[i];
+    html += '<div class="subtask-item" data-i="'+i+'">'+
+      '<div class="subtask-checkbox'+(st.done?' checked':'')+'" data-act="toggle" data-i="'+i+'">'+(st.done?'✓':'')+'</div>'+
+      '<input class="subtask-input'+(st.done?' checked':'')+'" data-i="'+i+'" type="text" value="'+x(st.text)+'" placeholder="Sub-item…">'+
+      '<button type="button" class="subtask-del" data-act="del" data-i="'+i+'">×</button>'+
+      '</div>';
+  }
+  c.innerHTML = html;
+}
+
+function captureSubtaskInputs(prefix, list){
+  var inputs = document.querySelectorAll('#'+prefix+'-subtasks-list .subtask-input');
+  for(var i=0;i<inputs.length;i++){
+    var idx = parseInt(inputs[i].dataset.i,10);
+    if(!isNaN(idx) && list[idx]) list[idx].text = inputs[i].value.trim();
+  }
+  // Remove empty subtasks
+  for(var i=list.length-1;i>=0;i--){
+    if(!list[i].text) list.splice(i,1);
+  }
+}
+
+function attachSubtaskHandlers(prefix, listRef){
+  var listEl = document.getElementById(prefix+'-subtasks-list');
+  var btn    = document.getElementById(prefix+'-add-subtask');
+  if(!listEl || !btn) return;
+  // Add button
+  btn.addEventListener('click', function(){
+    captureSubtaskInputs(prefix, listRef());
+    listRef().push({text:'', done:false});
+    renderSubtasksUI(prefix, listRef());
+    setTimeout(function(){
+      var inputs = document.querySelectorAll('#'+prefix+'-subtasks-list .subtask-input');
+      if(inputs.length){
+        inputs[inputs.length-1].focus();
+      }
+    }, 50);
+  });
+  // Delegate clicks (toggle/del)
+  listEl.addEventListener('click', function(e){
+    var el = e.target.closest('[data-act]');
+    if(!el) return;
+    var act = el.dataset.act;
+    var i = parseInt(el.dataset.i,10);
+    var list = listRef();
+    if(isNaN(i) || !list[i]) return;
+    captureSubtaskInputs(prefix, list);
+    if(act === 'toggle'){
+      list[i].done = !list[i].done;
+    } else if(act === 'del'){
+      list.splice(i,1);
+    }
+    renderSubtasksUI(prefix, list);
+  });
+}
+
+attachSubtaskHandlers('f', function(){ return tempSubtasksF; });
+attachSubtaskHandlers('e', function(){ return tempSubtasksE; });
+
+/* ═══════════════════════════════════════════
+   COMPARTILHAR TAREFA (Web Share API)
+   ═══════════════════════════════════════════ */
+function shareTask(id){
+  var t = null;
+  for(var i=0;i<tasks.length;i++) if(tasks[i].id===id) t=tasks[i];
+  if(!t) return;
+  var lines = [];
+  lines.push('📋 ' + t.title);
+  var cc = CC[t.cc];
+  if(cc) lines.push('🏷 ' + cc.lbl);
+  if(t.local){
+    var info = getLocalInfo(t.local);
+    var locLabel = info.predio ? info.predio+' · '+t.local : t.local;
+    lines.push('📍 ' + locLabel);
+  }
+  if(t.pessoa) lines.push('👤 ' + t.pessoa);
+  if(t.prazo){
+    var d = new Date(t.prazo+'T12:00:00');
+    var dStr = d.toLocaleDateString('pt-BR');
+    lines.push('📅 Prazo: ' + dStr);
+  }
+  if(t.obs) lines.push('\n' + t.obs);
+  if(t.subtasks && t.subtasks.length){
+    lines.push('');
+    for(var s=0;s<t.subtasks.length;s++){
+      var st = t.subtasks[s];
+      lines.push((st.done?'☑':'☐') + ' ' + st.text);
+    }
+  }
+  var total = 0;
+  for(var g=0;g<gastos.length;g++) if(gastos[g].taskId===t.id) total+=gastos[g].valor;
+  if(total>0) lines.push('\n💸 Total: ' + brl(total));
+
+  var text = lines.join('\n');
+  if(navigator.share){
+    navigator.share({title: t.title, text: text}).catch(function(){});
+  } else if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      showToast('📋 Tarefa copiada!');
+    }).catch(function(){
+      showToast('Não foi possível copiar');
+    });
+  } else {
+    showToast('Compartilhamento não suportado neste dispositivo');
+  }
+}
+
+function showToast(msg){
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:140px;left:50%;transform:translateX(-50%);background:var(--surf);color:var(--ink);border:1px solid var(--brand);border-radius:99px;padding:10px 18px;font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;z-index:200;box-shadow:0 6px 20px rgba(0,0,0,.5),0 0 16px rgba(61,169,252,.3);animation:fadeUp .3s ease;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(function(){
+    t.style.transition = 'opacity .3s';
+    t.style.opacity = '0';
+    setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t); }, 350);
+  }, 1800);
+}
+
+/* ═══════════════════════════════════════════
+   MODO SELEÇÃO EM MASSA
+   ═══════════════════════════════════════════ */
+function toggleSelectMode(){
+  selectMode = !selectMode;
+  selectedIds = [];
+  updateMassToolbar();
+  // Update all select-toggle buttons
+  var btns = document.querySelectorAll('.select-toggle');
+  for(var i=0;i<btns.length;i++){
+    btns[i].classList.toggle('on', selectMode);
+    btns[i].textContent = selectMode ? '✕ Sair do modo' : '☑ Selecionar';
+  }
+  render();
+}
+
+function updateMassToolbar(){
+  var bar = document.getElementById('mass-toolbar');
+  var fab = document.getElementById('fabBtn');
+  if(selectMode && selectedIds.length > 0){
+    bar.classList.add('on');
+    document.getElementById('mass-count').textContent = selectedIds.length+' selecionada'+(selectedIds.length!==1?'s':'');
+    if(fab) fab.style.display = 'none';
+  } else {
+    bar.classList.remove('on');
+    if(fab) fab.style.display = '';
+  }
+}
+
+document.body.addEventListener('click', function(e){
+  var toggle = e.target.closest('.select-toggle');
+  if(toggle){ toggleSelectMode(); return; }
+});
+
+document.getElementById('mass-cancel').addEventListener('click', function(){
+  if(selectMode) toggleSelectMode();
+});
+
+document.getElementById('mass-go').addEventListener('click', function(){
+  if(!selectedIds.length) return;
+  for(var i=0;i<tasks.length;i++){
+    if(selectedIds.indexOf(tasks[i].id) !== -1) tasks[i].done = true;
+  }
+  savT();
+  selectMode = false;
+  selectedIds = [];
+  var btns = document.querySelectorAll('.select-toggle');
+  for(var i=0;i<btns.length;i++){
+    btns[i].classList.remove('on');
+    btns[i].textContent = '☑ Selecionar';
+  }
+  updateMassToolbar();
+  render();
+  showToast('✓ Tarefas concluídas!');
 });
 
 /* DELETE */
@@ -2768,15 +3454,55 @@ function cardHtml(t){
   var costBtn  = '<button class="btn-cost" data-id="'+t.id+'">+ custo</button>';
   var undoHint = t.done ? '<div style="font-size:10px;color:var(--dim);margin-top:4px;">↩ toque no ✓ para desfazer</div>' : '';
   var obsHtml  = t.obs ? '<div class="task-obs">'+x(t.obs)+'</div>' : '';
-  return '<div class="task-card tc-'+t.cc+(t.done?' tc-done':'')+'">'+
+
+  // Sub-tarefas (checklist no card)
+  var subsHtml = '';
+  var subDoneCount = 0;
+  if(t.subtasks && t.subtasks.length){
+    for(var s=0;s<t.subtasks.length;s++) if(t.subtasks[s].done) subDoneCount++;
+    var subItems = '';
+    for(var s=0;s<t.subtasks.length;s++){
+      var st = t.subtasks[s];
+      subItems += '<div class="card-subtask" data-task="'+t.id+'" data-sub="'+s+'">'+
+        '<div class="card-subtask-cb'+(st.done?' checked':'')+'">'+(st.done?'✓':'')+'</div>'+
+        '<span class="card-subtask-text'+(st.done?' checked':'')+'">'+x(st.text)+'</span>'+
+        '</div>';
+    }
+    subsHtml = '<div class="card-subtasks">'+subItems+'</div>';
+    var subCount = '<span class="card-subtask-count">✓ '+subDoneCount+'/'+t.subtasks.length+'</span>';
+    costChip = subCount + costChip;
+  }
+
+  // Alerta de prazo (overdue/today)
+  var alertCls = '';
+  if(!t.done && t.prazo){
+    var ps = getPrazoStatus(t.prazo);
+    if(ps){
+      if(ps.isOverdue) alertCls = ' alert-overdue';
+      else if(ps.isToday) alertCls = ' alert-today';
+    }
+  }
+
+  // Modo seleção
+  var selCls = selectMode ? ' selectable' : '';
+  var selBox = '';
+  if(selectMode){
+    var isSel = selectedIds.indexOf(t.id) !== -1;
+    selCls += isSel ? ' selected' : '';
+    selBox = '<div class="card-select">'+(isSel?'✓':'')+'</div>';
+  }
+
+  return '<div class="task-card tc-'+t.cc+(t.done?' tc-done':'')+alertCls+selCls+'" data-id="'+t.id+'">'+
+    selBox+
     '<div class="chk-box cc-'+t.cc+(t.done?' checked':'')+'" data-id="'+t.id+'">✓</div>'+
     '<div class="task-body">'+
       '<div class="task-title">'+x(t.title)+'</div>'+
       '<div class="task-sub"><span class="chip '+cc.chip+'">'+cc.lbl+'</span>'+loc+pessoa+prazoChip+costChip+
         '<span style="font-size:10px;color:var(--dim-2)">criada '+dt(t.ts)+'</span></div>'+
-      obsHtml+undoHint+
+      obsHtml+subsHtml+undoHint+
     '</div>'+
     '<div class="task-actions">'+
+      '<button class="btn-share" data-id="'+t.id+'" title="Compartilhar">📤</button>'+
       '<button class="btn-del" data-id="'+t.id+'">×</button>'+
       '<button class="btn-edit" data-id="'+t.id+'" title="Editar">✏️</button>'+
       costBtn+
