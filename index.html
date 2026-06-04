@@ -1227,7 +1227,144 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 }
 .exp-modal-list{max-height:220px;overflow-y:auto;margin:14px 0 0;}
 
-/* SUB-TAREFAS (checklist) */
+/* MULTI-IMÓVEL */
+.btn-multi-prop{
+  width:100%;
+  margin-top:8px;
+  background:transparent;
+  border:1.5px dashed var(--line);
+  border-radius:11px;
+  padding:11px;
+  color:var(--brand);
+  font-family:var(--font-display);
+  font-size:11px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;
+  cursor:pointer;
+  transition:all .15s;
+}
+.btn-multi-prop:hover{border-color:var(--brand);background:var(--brand-tint);}
+.btn-multi-prop.active{
+  border-style:solid;
+  border-color:var(--brand);
+  background:var(--brand-tint);
+}
+.multi-summary{
+  margin-top:8px;
+  padding:10px 12px;
+  background:var(--brand-tint);
+  border:1px solid rgba(61,169,252,.3);
+  border-radius:9px;
+  font-size:12.5px;
+  color:var(--brand);
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+.multi-summary .clear-multi{
+  margin-left:auto;
+  background:none;
+  border:none;
+  color:var(--dim-2);
+  font-size:16px;
+  cursor:pointer;
+  padding:2px 6px;
+}
+.multi-summary .clear-multi:hover{color:#FF5555;}
+
+/* Multi-list (modal) */
+.multi-predio-group{
+  margin-bottom:14px;
+}
+.multi-predio-header{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  padding:6px 4px;
+  margin-bottom:6px;
+  border-bottom:1px solid var(--line-soft);
+}
+.multi-predio-name{
+  font-family:var(--font-display);
+  font-size:11px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;
+  color:var(--ink-2);
+  flex:1;
+}
+.multi-predio-toggle{
+  background:none;
+  border:1px solid var(--line);
+  border-radius:6px;
+  color:var(--dim);
+  font-size:10px;font-family:var(--font-display);
+  font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:4px 8px;
+  cursor:pointer;
+}
+.multi-predio-toggle:hover{color:var(--brand);border-color:var(--brand);}
+.multi-row{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:10px 12px;
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:9px;
+  margin-bottom:5px;
+  cursor:pointer;
+  transition:all .12s;
+}
+.multi-row:hover{border-color:var(--dim-2);}
+.multi-row.selected{
+  background:var(--brand-tint);
+  border-color:var(--brand);
+}
+.multi-cb{
+  width:20px;height:20px;
+  border-radius:6px;
+  border:2px solid var(--dim-2);
+  background:transparent;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--paper);font-size:12px;font-weight:900;
+  flex-shrink:0;
+  transition:all .15s;
+}
+.multi-row.selected .multi-cb{
+  background:var(--brand);
+  border-color:var(--brand);
+}
+.multi-name{flex:1;font-size:13.5px;color:var(--ink);font-weight:500;}
+
+/* Cost split options */
+.btn-split-opt{
+  background:var(--surf-2);
+  border:1.5px solid var(--line);
+  border-radius:11px;
+  padding:13px 14px;
+  text-align:left;
+  cursor:pointer;
+  transition:all .15s;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.btn-split-opt:hover{
+  border-color:var(--brand);
+  background:var(--brand-tint);
+}
+.bso-ttl{
+  font-family:var(--font-display);
+  font-size:13px;font-weight:800;
+  color:var(--ink);
+  letter-spacing:-.01em;
+}
+.bso-sub{
+  font-size:11.5px;
+  color:var(--dim);
+  font-weight:500;
+}
+
+
 .subtasks-list{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
 .subtask-item{
   display:flex;align-items:center;gap:9px;
@@ -1594,6 +1731,8 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <option value="__other__">✏️ Digitar outro local…</option>
     </select>
     <input class="finput" id="f-local" type="text" placeholder="Digite o local…" style="margin-top:6px;display:none;">
+    <button type="button" class="btn-multi-prop" id="f-btn-multi">🏢 Aplicar a vários imóveis</button>
+    <div id="f-multi-summary" class="multi-summary" style="display:none;"></div>
     <label class="flabel">Observação</label>
     <textarea class="finput" id="f-obs" placeholder="Detalhes adicionais…"></textarea>
     <label class="flabel">Sub-itens (checklist)</label>
@@ -1623,6 +1762,51 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <div class="btn-row">
       <button class="btn-s" id="btn-cancel-new">Cancelar</button>
       <button class="btn-p" id="btn-save-task">Criar Tarefa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SELEÇÃO DE MÚLTIPLOS IMÓVEIS -->
+<div class="overlay" id="ov-multi">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Selecionar imóveis</h2>
+    <p style="font-size:13px;color:var(--dim);margin-bottom:14px;line-height:1.5;">Marque os imóveis em que a tarefa será aplicada. Uma tarefa será criada para cada um.</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button type="button" class="btn-s" id="multi-select-all" style="flex:0 0 auto;padding:8px 12px;">✓ Todos</button>
+      <button type="button" class="btn-s" id="multi-clear" style="flex:0 0 auto;padding:8px 12px;">✕ Limpar</button>
+    </div>
+    <div id="multi-list" style="max-height:50vh;overflow-y:auto;"></div>
+    <div id="multi-summary-modal" style="margin:14px 0 4px;font-family:var(--font-display);font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--brand);text-align:center;">0 imóveis selecionados</div>
+    <div class="btn-row">
+      <button class="btn-s" id="multi-cancel">Cancelar</button>
+      <button class="btn-p" id="multi-confirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DISTRIBUIÇÃO DE CUSTO ENTRE MÚLTIPLOS -->
+<div class="overlay" id="ov-costsplit">
+  <div class="modal" style="padding-bottom:36px;">
+    <div class="modal-handle"></div>
+    <h2>Como distribuir o custo?</h2>
+    <p style="font-size:13.5px;color:var(--dim);margin-bottom:14px;line-height:1.5;" id="costsplit-info"></p>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <button type="button" class="btn-split-opt" data-mode="each">
+        <div class="bso-ttl">Mesmo valor em cada imóvel</div>
+        <div class="bso-sub" id="bso-each-sub"></div>
+      </button>
+      <button type="button" class="btn-split-opt" data-mode="divide">
+        <div class="bso-ttl">Dividir total pelos imóveis</div>
+        <div class="bso-sub" id="bso-divide-sub"></div>
+      </button>
+      <button type="button" class="btn-split-opt" data-mode="none">
+        <div class="bso-ttl">Sem custo agora</div>
+        <div class="bso-sub">Crio só as tarefas, lanço os custos depois</div>
+      </button>
+    </div>
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn-s" id="costsplit-cancel">Voltar</button>
     </div>
   </div>
 </div>
@@ -2077,6 +2261,10 @@ var tempSubtasksE = [];
 var selectMode = false;
 var selectedIds = [];
 
+/* Multi-imóvel state (new task only) */
+var multiImoveis = []; // array of imóvel names
+var pendingTaskData = null; // holds task data while cost-split modal is open
+
 /* TABS */
 document.getElementById('tabs').addEventListener('click', function(e){
   var tab = e.target.closest('.tab');
@@ -2380,6 +2568,8 @@ document.addEventListener('click', function(e){
   if(e.target.id==='ov-exp')    closeExport();
   if(e.target.id==='ov-wa')     closeWA();
   if(e.target.id==='ov-backup') closeBackup();
+  if(e.target.id==='ov-multi')  closeMultiModal();
+  if(e.target.id==='ov-costsplit'){ closeCostSplit(); pendingTaskData=null; }
 });
 
 /* NEW TASK */
@@ -2400,6 +2590,8 @@ function openNew(){
   for(var i=0;i<opts.length;i++) opts[i].className='cc-opt';
   tempSubtasksF = [];
   renderSubtasksUI('f', tempSubtasksF);
+  multiImoveis = [];
+  updateMultiSummary();
   document.getElementById('ov-new').classList.add('on');
   setTimeout(function(){ document.getElementById('f-title').focus(); }, 220);
 }
@@ -2419,9 +2611,10 @@ document.getElementById('btn-save-task').addEventListener('click', function(){
     err.style.display = 'block';
     return;
   }
-  var localVal = getLocalValue('f');
-  // Warn if Loftcare/aluGO without imóvel
-  if(!localVal && (pickCC==='loft' || pickCC==='alug') && !this.dataset.confirmed){
+  var isMulti  = multiImoveis.length > 0;
+  var localVal = isMulti ? '' : getLocalValue('f');
+  // Warn if Loftcare/aluGO without imóvel (only for single-mode)
+  if(!isMulti && !localVal && (pickCC==='loft' || pickCC==='alug') && !this.dataset.confirmed){
     err.innerHTML = '⚠️ Tarefa de <strong>'+CC[pickCC].lbl+'</strong> sem imóvel. Vai para gastos sem código — toque em "Salvar" de novo para confirmar.';
     err.style.display = 'block';
     err.style.background = 'rgba(245,185,98,.1)';
@@ -2437,22 +2630,45 @@ document.getElementById('btn-save-task').addEventListener('click', function(){
   err.style.color = '';
   // Capture any pending subtask text in input fields
   captureSubtaskInputs('f', tempSubtasksF);
+
+  var taskData = {
+    cc:    pickCC,
+    title: title,
+    obs:    document.getElementById('f-obs').value.trim(),
+    pessoa: document.getElementById('f-pessoa').value,
+    prazo:  document.getElementById('f-prazo').value,
+    subtasks: tempSubtasksF.slice()
+  };
+  var custoVal = parseFloat(document.getElementById('f-custo').value);
+  if(isNaN(custoVal)) custoVal = 0;
+
+  // MULTI MODE: ask how to distribute cost (if any)
+  if(isMulti){
+    if(custoVal > 0){
+      openCostSplit(taskData, custoVal);
+      return; // wait for user choice in cost-split modal
+    } else {
+      createMultiTasks({task:taskData, custo:0, qtd:multiImoveis.length, imoveis:multiImoveis.slice()}, 'none');
+      return;
+    }
+  }
+
+  // SINGLE TASK (original path)
   var t = {
     id:    n(),
     cc:    pickCC,
     title: title,
     local:  localVal,
-    obs:    document.getElementById('f-obs').value.trim(),
-    pessoa: document.getElementById('f-pessoa').value,
-    prazo:  document.getElementById('f-prazo').value,
+    obs:    taskData.obs,
+    pessoa: taskData.pessoa,
+    prazo:  taskData.prazo,
     done:  false,
     ts:    Date.now(),
-    subtasks: tempSubtasksF.slice()
+    subtasks: taskData.subtasks
   };
   tasks.unshift(t);
   // Create gasto if cost was provided
-  var custoVal = parseFloat(document.getElementById('f-custo').value);
-  if(custoVal && custoVal > 0){
+  if(custoVal > 0){
     gastos.push({
       id: n(),
       taskId: t.id,
@@ -2666,6 +2882,257 @@ function attachSubtaskHandlers(prefix, listRef){
 
 attachSubtaskHandlers('f', function(){ return tempSubtasksF; });
 attachSubtaskHandlers('e', function(){ return tempSubtasksE; });
+
+/* ═══════════════════════════════════════════
+   MULTI-IMÓVEL — Aplicar tarefa a vários imóveis
+   ═══════════════════════════════════════════ */
+function openMultiModal(){
+  renderMultiList();
+  document.getElementById('ov-multi').classList.add('on');
+}
+function closeMultiModal(){
+  document.getElementById('ov-multi').classList.remove('on');
+}
+
+function renderMultiList(){
+  var c = document.getElementById('multi-list');
+  if(locais.length === 0){
+    c.innerHTML = '<div style="font-size:13px;color:var(--dim);text-align:center;padding:20px;">Nenhum imóvel cadastrado. Vá em ⚙️ Configurações para adicionar.</div>';
+    updateMultiCountInModal();
+    return;
+  }
+  // Group locais by predio
+  var groups = {};
+  var noPredio = [];
+  for(var i=0;i<locais.length;i++){
+    var l = locais[i];
+    if(l.predio){
+      if(!groups[l.predio]) groups[l.predio] = [];
+      groups[l.predio].push(l.nome);
+    } else {
+      noPredio.push(l.nome);
+    }
+  }
+  var html = '';
+  // Render each predio group
+  var predioNames = [];
+  for(var p in groups) predioNames.push(p);
+  predioNames.sort();
+  for(var p=0;p<predioNames.length;p++){
+    var predioName = predioNames[p];
+    var items = groups[predioName].slice().sort();
+    html += '<div class="multi-predio-group">'+
+      '<div class="multi-predio-header">'+
+        '<span style="font-size:14px;">🏢</span>'+
+        '<div class="multi-predio-name">'+x(predioName)+'</div>'+
+        '<button type="button" class="multi-predio-toggle" data-predio="'+x(predioName)+'">Todos</button>'+
+      '</div>';
+    for(var i=0;i<items.length;i++){
+      var nome = items[i];
+      var isSel = multiImoveis.indexOf(nome) !== -1;
+      html += '<div class="multi-row'+(isSel?' selected':'')+'" data-nome="'+x(nome)+'">'+
+        '<div class="multi-cb">'+(isSel?'✓':'')+'</div>'+
+        '<div class="multi-name">📍 '+x(nome)+'</div>'+
+        '</div>';
+    }
+    html += '</div>';
+  }
+  // No-predio section
+  if(noPredio.length){
+    html += '<div class="multi-predio-group">'+
+      '<div class="multi-predio-header"><div class="multi-predio-name">Sem prédio</div></div>';
+    for(var i=0;i<noPredio.length;i++){
+      var nome = noPredio[i];
+      var isSel = multiImoveis.indexOf(nome) !== -1;
+      html += '<div class="multi-row'+(isSel?' selected':'')+'" data-nome="'+x(nome)+'">'+
+        '<div class="multi-cb">'+(isSel?'✓':'')+'</div>'+
+        '<div class="multi-name">📍 '+x(nome)+'</div>'+
+        '</div>';
+    }
+    html += '</div>';
+  }
+  c.innerHTML = html;
+  updateMultiCountInModal();
+}
+
+function updateMultiCountInModal(){
+  var n = multiImoveis.length;
+  var lbl = n === 0 ? '0 imóveis selecionados'
+          : n === 1 ? '1 imóvel selecionado'
+          : n + ' imóveis selecionados';
+  var el = document.getElementById('multi-summary-modal');
+  if(el) el.textContent = lbl;
+}
+
+function updateMultiSummary(){
+  var btn = document.getElementById('f-btn-multi');
+  var sum = document.getElementById('f-multi-summary');
+  var localSel = document.getElementById('f-local-sel');
+  var localInput = document.getElementById('f-local');
+  if(multiImoveis.length === 0){
+    btn.classList.remove('active');
+    btn.textContent = '🏢 Aplicar a vários imóveis';
+    sum.style.display = 'none';
+    if(localSel) localSel.disabled = false;
+    if(localInput) localInput.disabled = false;
+    return;
+  }
+  btn.classList.add('active');
+  btn.textContent = '✏️ Alterar seleção (' + multiImoveis.length + ')';
+  sum.style.display = 'flex';
+  var lbl = multiImoveis.length === 1 ? '1 imóvel: ' + multiImoveis[0]
+                                       : multiImoveis.length + ' imóveis selecionados';
+  sum.innerHTML = '<span>🏢</span><span>'+x(lbl)+'</span><button type="button" class="clear-multi" id="multi-clear-btn">✕</button>';
+  // Disable single-local selectors (multi takes over)
+  if(localSel) localSel.disabled = true;
+  if(localInput) localInput.disabled = true;
+}
+
+document.getElementById('f-btn-multi').addEventListener('click', openMultiModal);
+
+document.getElementById('multi-cancel').addEventListener('click', function(){
+  closeMultiModal();
+});
+document.getElementById('multi-confirm').addEventListener('click', function(){
+  closeMultiModal();
+  updateMultiSummary();
+});
+
+document.getElementById('multi-select-all').addEventListener('click', function(){
+  multiImoveis = [];
+  for(var i=0;i<locais.length;i++) multiImoveis.push(locais[i].nome);
+  renderMultiList();
+});
+document.getElementById('multi-clear').addEventListener('click', function(){
+  multiImoveis = [];
+  renderMultiList();
+});
+
+document.getElementById('multi-list').addEventListener('click', function(e){
+  // Toggle predio group ("Todos" button)
+  var toggle = e.target.closest('.multi-predio-toggle');
+  if(toggle){
+    var predio = toggle.dataset.predio;
+    // Find all locais of this predio
+    var imoveis = [];
+    for(var i=0;i<locais.length;i++){
+      if(locais[i].predio === predio) imoveis.push(locais[i].nome);
+    }
+    // If all already selected → deselect them; otherwise select all
+    var allSel = true;
+    for(var i=0;i<imoveis.length;i++){
+      if(multiImoveis.indexOf(imoveis[i]) === -1){ allSel=false; break; }
+    }
+    if(allSel){
+      for(var i=0;i<imoveis.length;i++){
+        var idx = multiImoveis.indexOf(imoveis[i]);
+        if(idx !== -1) multiImoveis.splice(idx,1);
+      }
+    } else {
+      for(var i=0;i<imoveis.length;i++){
+        if(multiImoveis.indexOf(imoveis[i]) === -1) multiImoveis.push(imoveis[i]);
+      }
+    }
+    renderMultiList();
+    return;
+  }
+  // Toggle individual row
+  var row = e.target.closest('.multi-row');
+  if(row){
+    var nome = row.dataset.nome;
+    var idx = multiImoveis.indexOf(nome);
+    if(idx === -1) multiImoveis.push(nome);
+    else multiImoveis.splice(idx, 1);
+    renderMultiList();
+  }
+});
+
+// Clear button on summary
+document.body.addEventListener('click', function(e){
+  if(e.target && e.target.id === 'multi-clear-btn'){
+    multiImoveis = [];
+    updateMultiSummary();
+  }
+});
+
+/* ═══════════════════════════════════════════
+   COST-SPLIT MODAL — quando salvar multi com custo
+   ═══════════════════════════════════════════ */
+function openCostSplit(taskData, custoVal){
+  pendingTaskData = {
+    task: taskData,
+    custo: custoVal,
+    qtd: multiImoveis.length,
+    imoveis: multiImoveis.slice()
+  };
+  document.getElementById('costsplit-info').innerHTML =
+    'Você lançou <strong>'+brl(custoVal)+'</strong> em uma tarefa de <strong>'+multiImoveis.length+'</strong> imóveis. Como distribuir?';
+  document.getElementById('bso-each-sub').textContent =
+    'Cada imóvel terá um gasto de ' + brl(custoVal);
+  document.getElementById('bso-divide-sub').textContent =
+    'Cada imóvel terá ' + brl(custoVal / multiImoveis.length) + ' (total = ' + brl(custoVal) + ')';
+  document.getElementById('ov-costsplit').classList.add('on');
+}
+function closeCostSplit(){
+  document.getElementById('ov-costsplit').classList.remove('on');
+}
+
+document.getElementById('costsplit-cancel').addEventListener('click', function(){
+  closeCostSplit();
+  pendingTaskData = null;
+});
+
+document.getElementById('ov-costsplit').addEventListener('click', function(e){
+  var btn = e.target.closest('.btn-split-opt');
+  if(!btn) return;
+  var mode = btn.dataset.mode;
+  if(!pendingTaskData) return;
+  createMultiTasks(pendingTaskData, mode);
+  closeCostSplit();
+  pendingTaskData = null;
+});
+
+function createMultiTasks(data, costMode){
+  var task    = data.task;
+  var imoveis = data.imoveis;
+  var custo   = data.custo || 0;
+  var perImovel = 0;
+  if(costMode === 'each'      && custo > 0) perImovel = custo;
+  else if(costMode === 'divide' && custo > 0) perImovel = custo / imoveis.length;
+  // costMode === 'none' or no custo → 0
+
+  for(var i=0;i<imoveis.length;i++){
+    var t = {
+      id:    n(),
+      cc:    task.cc,
+      title: task.title,
+      local: imoveis[i],
+      obs:   task.obs,
+      pessoa: task.pessoa,
+      prazo:  task.prazo,
+      done:   false,
+      ts:     Date.now() + i, // slight offset to keep order
+      subtasks: task.subtasks ? task.subtasks.slice() : []
+    };
+    tasks.unshift(t);
+    if(perImovel > 0){
+      gastos.push({
+        id: n(),
+        taskId: t.id,
+        cc: t.cc,
+        title: t.title,
+        local: t.local,
+        valor: perImovel,
+        ts: Date.now() + i
+      });
+    }
+  }
+  savT();
+  if(perImovel > 0) savG();
+  closeNew();
+  render();
+  showToast('✓ ' + imoveis.length + ' tarefas criadas');
+}
 
 /* ═══════════════════════════════════════════
    COMPARTILHAR TAREFA (Web Share API)
