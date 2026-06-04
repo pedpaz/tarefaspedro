@@ -1009,14 +1009,14 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 }
 
 /* EXPORT */
-.export-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:nowrap;}
+.export-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
 .btn-export{
-  flex:1;
+  flex:1 1 calc(50% - 3px);
   min-width:0;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:10px 6px;
+  padding:11px 8px;
   border:none;
   border-radius:var(--r-sm);
   font-family:var(--font-display);
@@ -1027,6 +1027,8 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   cursor:pointer;
   transition:transform .12s,filter .15s,box-shadow .15s;
   white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .btn-export:active{transform:scale(.96);}
 .btn-export:hover{filter:brightness(1.1);}
@@ -1038,7 +1040,9 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   background:linear-gradient(135deg,var(--brand) 0%,var(--brand-dk) 100%);
   color:#fff;
   box-shadow:0 0 14px rgba(61,169,252,.45);
-  grid-column:1 / -1;
+  flex:1 1 100%;
+  padding:13px;
+  font-size:11px;
 }
 .be-pess{background:var(--pess);color:var(--paper);box-shadow:0 0 10px rgba(217,130,255,.3);}
 .be-divs{background:var(--divs);color:var(--paper);box-shadow:0 0 10px rgba(255,138,61,.3);}
@@ -1068,6 +1072,25 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   vertical-align:middle;
 }
 .exp-item.clickable:hover .exp-edit-hint{opacity:1;}
+.exp-revert{
+  flex-shrink:0;
+  background:transparent;
+  border:1px solid var(--line);
+  border-radius:8px;
+  color:var(--dim);
+  font-size:14px;
+  padding:6px 10px;
+  margin-left:6px;
+  cursor:pointer;
+  line-height:1;
+  transition:all .15s;
+}
+.exp-revert:hover{
+  border-color:var(--brand);
+  color:var(--brand);
+  background:var(--brand-tint);
+}
+.exp-revert:active{transform:scale(.95);}
 .exp-dot{
   width:9px;
   height:9px;
@@ -2660,6 +2683,23 @@ document.addEventListener('click', function(e){
       openEdit(card.dataset.id);
       return;
     }
+  }
+
+  // Revert exportação (must come BEFORE the general gasto click → opens edit)
+  var revBtn = e.target.closest('.exp-revert');
+  if(revBtn){
+    var gid = revBtn.dataset.gid;
+    for(var i=0;i<gastos.length;i++){
+      if(gastos[i].id === gid){
+        gastos[i].exported = false;
+        delete gastos[i].exportedAt;
+        break;
+      }
+    }
+    savG();
+    render();
+    showToast('↩ Exportação revertida');
+    return;
   }
 
   // Tap on a gasto card (aba Gastos) opens the linked task for editing
@@ -4341,6 +4381,7 @@ function expItemHtml(g, badgeType){
   var clickable = hasTask ? ' clickable' : '';
   var dataAttr = hasTask ? ' data-task-id="'+g.taskId+'"' : '';
   var editHint = hasTask ? '<span class="exp-edit-hint">✏️</span>' : '';
+  var revertBtn = (badgeType==='exported') ? '<button class="exp-revert" data-gid="'+g.id+'" title="Reverter exportação">↩</button>' : '';
   return '<div class="exp-item'+(badgeType==='exported'?' exported':'')+clickable+'"'+dataAttr+'>'+
     '<div class="exp-dot '+CC[g.cc].dot+'"></div>'+
     '<div class="exp-body">'+
@@ -4348,6 +4389,7 @@ function expItemHtml(g, badgeType){
       '<div class="exp-sub">'+CC[g.cc].lbl+(g.local?' · '+x(g.local):'')+' · '+dt(g.ts)+'</div>'+
     '</div>'+
     '<div class="exp-val">'+brl(g.valor)+editHint+'</div>'+
+    revertBtn+
   '</div>';
 }
 
