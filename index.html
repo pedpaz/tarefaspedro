@@ -1051,7 +1051,17 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   transition:transform .15s,border-color .15s;
 }
 .exp-item:hover{transform:translateY(-1px);border-color:var(--dim-2);}
-.exp-item.exported{opacity:.45;}
+.exp-item.exported{opacity:.55;}
+.exp-item.clickable{cursor:pointer;}
+.exp-item.clickable:active{transform:scale(.99);background:var(--surf-2);}
+.exp-item.clickable:hover{border-color:var(--brand);}
+.exp-edit-hint{
+  font-size:11px;
+  margin-left:8px;
+  opacity:.4;
+  vertical-align:middle;
+}
+.exp-item.clickable:hover .exp-edit-hint{opacity:1;}
 .exp-dot{
   width:9px;
   height:9px;
@@ -2356,6 +2366,13 @@ document.addEventListener('click', function(e){
     }
   }
 
+  // Tap on a gasto card (aba Gastos) opens the linked task for editing
+  var expItem = e.target.closest('.exp-item.clickable');
+  if(expItem && expItem.dataset.taskId){
+    openEdit(expItem.dataset.taskId);
+    return;
+  }
+
   if(e.target.id==='ov-new')    closeNew();
   if(e.target.id==='ov-del')    closeDelConfirm();
   if(e.target.id==='ov-edit')   closeEdit();
@@ -3625,13 +3642,19 @@ function expItemHtml(g, badgeType){
   var badge = '';
   if(badgeType==='exported') badge = '<span class="badge-exp">exportado</span>';
   else if(badgeType==='waiting') badge = '<span class="badge-wait">aguardando</span>';
-  return '<div class="exp-item'+(badgeType==='exported'?' exported':'')+'">'+
+  // Check if linked task still exists
+  var hasTask = false;
+  for(var i=0;i<tasks.length;i++) if(tasks[i].id===g.taskId){ hasTask=true; break; }
+  var clickable = hasTask ? ' clickable' : '';
+  var dataAttr = hasTask ? ' data-task-id="'+g.taskId+'"' : '';
+  var editHint = hasTask ? '<span class="exp-edit-hint">✏️</span>' : '';
+  return '<div class="exp-item'+(badgeType==='exported'?' exported':'')+clickable+'"'+dataAttr+'>'+
     '<div class="exp-dot '+CC[g.cc].dot+'"></div>'+
     '<div class="exp-body">'+
       '<div class="exp-ttl">'+x(g.title)+badge+'</div>'+
       '<div class="exp-sub">'+CC[g.cc].lbl+(g.local?' · '+x(g.local):'')+' · '+dt(g.ts)+'</div>'+
     '</div>'+
-    '<div class="exp-val">'+brl(g.valor)+'</div>'+
+    '<div class="exp-val">'+brl(g.valor)+editHint+'</div>'+
   '</div>';
 }
 
