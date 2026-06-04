@@ -3640,7 +3640,8 @@ function buildCSV(gastosArr){
     }
     lines.push(cells.join(';'));
   }
-  return lines.join('\n');
+  // CRLF é o padrão RFC 4180 (mais compatível com Excel/Sheets/parsers)
+  return lines.join('\r\n');
 }
 
 function openExport(scope){
@@ -3721,7 +3722,10 @@ document.getElementById('btn-confirm-exp').addEventListener('click', function(){
   var ready = getReadyGastosScope(expTargetCC);
   if(!ready.length){ closeExport(); return; }
   var csv = buildCSV(ready);
-  var blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  // TextEncoder produz bytes UTF-8 puros, sem chance do navegador
+  // re-interpretar/duplicar o BOM. Padrão recomendado (RFC 4180 + UTF-8 BOM).
+  var bytes = new TextEncoder().encode('\uFEFF' + csv);
+  var blob  = new Blob([bytes], {type:'text/csv'});
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
   a.href   = url;
