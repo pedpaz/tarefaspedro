@@ -1091,6 +1091,86 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   background:var(--brand-tint);
 }
 .exp-revert:active{transform:scale(.95);}
+
+.exp-cat-chip{
+  display:inline-block;
+  margin-top:6px;
+  background:transparent;
+  border:1px dashed var(--line);
+  border-radius:14px;
+  color:var(--dim);
+  font-size:10.5px;
+  font-weight:600;
+  padding:3px 9px;
+  cursor:pointer;
+  transition:all .15s;
+  font-family:inherit;
+}
+.exp-cat-chip:hover{
+  border-color:var(--brand);
+  color:var(--brand);
+}
+.exp-cat-chip.set{
+  background:var(--brand-tint);
+  border:1px solid var(--brand-dk);
+  color:var(--brand-lt);
+}
+.exp-cat-chip:active{transform:scale(.97);}
+
+.cat-opt{
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:11px 14px;
+  font-size:14px;
+  color:var(--ink);
+  cursor:pointer;
+  text-align:left;
+  transition:all .15s;
+  font-family:inherit;
+}
+.cat-opt:hover{border-color:var(--brand);background:var(--brand-tint);}
+.cat-opt.active{
+  border-color:var(--brand-dk);
+  background:var(--brand-tint);
+  color:var(--brand-lt);
+  font-weight:700;
+}
+.cat-opt-clear{
+  color:var(--dim);
+  border-style:dashed;
+}
+
+/* PERIOD FILTER (Gastos tab) */
+.period-filter{
+  display:flex;
+  gap:5px;
+  margin-bottom:10px;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+}
+.pf-btn{
+  flex:1;
+  min-width:0;
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:7px 10px;
+  font-size:11px;
+  font-family:var(--font-display);
+  font-weight:600;
+  color:var(--dim);
+  cursor:pointer;
+  transition:all .15s;
+  white-space:nowrap;
+}
+.pf-btn:hover{border-color:var(--brand);color:var(--brand);}
+.pf-btn.active{
+  background:var(--brand-tint);
+  border-color:var(--brand-dk);
+  color:var(--brand-lt);
+}
+.pf-btn[data-period="custom"]{flex:0 0 42px;}
 .exp-dot{
   width:9px;
   height:9px;
@@ -1255,6 +1335,58 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   letter-spacing:-.01em;
 }
 .exp-modal-list{max-height:220px;overflow-y:auto;margin:14px 0 0;}
+
+/* VERSION FOOTER */
+#version-footer{
+  text-align:center;
+  font-size:10px;
+  color:var(--dim);
+  margin-top:14px;
+  font-family:var(--font-display);
+  letter-spacing:.06em;
+  opacity:.6;
+}
+#version-label{
+  color:var(--brand);
+  font-weight:700;
+}
+
+/* UPDATE BANNER (versão nova) */
+#update-banner{
+  position:fixed;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  background:linear-gradient(135deg, var(--brand) 0%, var(--brand-dk) 100%);
+  color:#fff;
+  padding:10px 14px;
+  border-radius:14px;
+  box-shadow:0 6px 20px rgba(61,169,252,.45);
+  display:flex;
+  gap:10px;
+  align-items:center;
+  z-index:9999;
+  font-size:13px;
+  font-weight:600;
+  animation:slideUp .35s ease-out;
+}
+@keyframes slideUp{
+  from{transform:translate(-50%, 60px); opacity:0;}
+  to{transform:translate(-50%, 0); opacity:1;}
+}
+#update-banner button{
+  background:#fff;
+  color:var(--brand-dk);
+  border:none;
+  border-radius:10px;
+  padding:6px 12px;
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  cursor:pointer;
+}
 
 /* EXPORT PREVIEW TABLE */
 #exp-preview-table th{
@@ -1757,6 +1889,18 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 </div>
 <div class="panel" id="panel-gastos">
   <div id="gs-orphan-warn"></div>
+  <div class="period-filter" id="period-filter">
+    <button class="pf-btn active" data-period="all">Todos</button>
+    <button class="pf-btn" data-period="month">Este mês</button>
+    <button class="pf-btn" data-period="last">Mês passado</button>
+    <button class="pf-btn" data-period="custom">📅</button>
+  </div>
+  <div id="period-custom" style="display:none;margin-bottom:10px;">
+    <div style="display:flex;gap:6px;align-items:center;font-size:11px;color:var(--dim);">
+      <span>De:</span><input type="date" id="pf-from" class="finput" style="padding:5px 8px;font-size:11px;flex:1;">
+      <span>até:</span><input type="date" id="pf-to" class="finput" style="padding:5px 8px;font-size:11px;flex:1;">
+    </div>
+  </div>
   <div class="export-row" id="export-row"></div>
   <div class="gs-grid" id="gs-grid"></div>
   <div class="total-bar"><span>Total registrado</span><strong id="gs-total">R$ 0,00</strong></div>
@@ -1955,11 +2099,25 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       </table>
     </div>
     <div id="exp-preview-more" style="font-size:11px;color:var(--dim);text-align:center;margin-bottom:8px;display:none;"></div>
+    <div id="exp-cat-breakdown" style="display:none;background:var(--surf-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;"></div>
     <div class="exp-modal-total"><span>Total</span><strong id="exp-modal-total-val">R$ 0,00</strong></div>
     <p style="font-size:11px;color:var(--dim);margin-top:10px;line-height:1.5;">Após confirmar, o CSV é baixado e os gastos ficam marcados como exportados.</p>
     <div class="btn-row">
       <button class="btn-s" id="btn-cancel-exp">Cancelar</button>
       <button class="btn-p" id="btn-confirm-exp">↓ Baixar CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: EDITAR CATEGORIA DE GASTO -->
+<div class="overlay" id="ov-cat">
+  <div class="modal" style="max-width:340px;">
+    <div class="modal-handle"></div>
+    <h2>Categoria do gasto</h2>
+    <p style="font-size:12.5px;color:var(--dim);margin-bottom:12px;line-height:1.5;" id="cat-context">—</p>
+    <div id="cat-options" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;"></div>
+    <div class="btn-row">
+      <button class="btn-s" id="btn-cancel-cat">Cancelar</button>
     </div>
   </div>
 </div>
@@ -2100,10 +2258,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <input type="file" id="restore-file" accept=".json">
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v13</span></div>
   </div>
 </div>
 
 <script>
+var APP_VERSION = 'v13';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -2683,6 +2843,14 @@ document.addEventListener('click', function(e){
       openEdit(card.dataset.id);
       return;
     }
+  }
+
+  // Categoria chip click — abre modal de seleção
+  var catBtn = e.target.closest('.exp-cat-chip');
+  if(catBtn){
+    e.stopPropagation();
+    openCategoriaModal(catBtn.dataset.gid);
+    return;
   }
 
   // Revert exportação (must come BEFORE the general gasto click → opens edit)
@@ -3657,6 +3825,7 @@ function openExport(scope){
     document.getElementById('exp-modal-summary').textContent = 'Nenhum gasto pronto para exportar.';
     document.getElementById('exp-preview-wrap').style.display = 'none';
     document.getElementById('exp-preview-more').style.display = 'none';
+    document.getElementById('exp-cat-breakdown').style.display = 'none';
     document.getElementById('btn-confirm-exp').disabled = true;
   } else {
     var ccBreakdown = '';
@@ -3705,10 +3874,79 @@ function openExport(scope){
     } else {
       moreEl.style.display = 'none';
     }
+
+    // Breakdown por categoria
+    var byCat = {};
+    var noCatCount = 0;
+    for(var i=0;i<ready.length;i++){
+      var cat = ready[i].categoria || '';
+      if(!cat) noCatCount++;
+      byCat[cat] = (byCat[cat] || 0) + ready[i].valor;
+    }
+    var catEl = document.getElementById('exp-cat-breakdown');
+    var catKeys = Object.keys(byCat).sort();
+    if(catKeys.length === 1 && catKeys[0] === '' && noCatCount === ready.length){
+      // Tudo sem categoria — mostra aviso
+      catEl.style.display = 'block';
+      catEl.innerHTML = '<div style="font-size:11.5px;color:#F5B962;line-height:1.5;">⚠️ Nenhum gasto tem categoria. Toque na chip ao lado do valor pra categorizar antes de exportar.</div>';
+    } else {
+      catEl.style.display = 'block';
+      var rows = '';
+      for(var i=0;i<catKeys.length;i++){
+        var k = catKeys[i];
+        var lbl = k === '' ? '🏷️ Sem categoria' : CATEGORIA_LABELS[k];
+        rows += '<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;'+(k===''?'color:#F5B962;':'color:var(--ink-2);')+'"><span>'+lbl+'</span><strong style="font-variant-numeric:tabular-nums;">'+brl(byCat[k])+'</strong></div>';
+      }
+      catEl.innerHTML = '<div style="font-family:var(--font-display);font-size:10px;color:var(--brand);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Por categoria</div>'+rows;
+    }
   }
   document.getElementById('ov-exp').classList.add('on');
 }
 function closeExport(){ document.getElementById('ov-exp').classList.remove('on'); }
+
+/* CATEGORIA — modal pra editar categoria de gasto existente */
+var catEditingGid = null;
+function openCategoriaModal(gid){
+  catEditingGid = gid;
+  var g = null;
+  for(var i=0;i<gastos.length;i++) if(gastos[i].id === gid){ g = gastos[i]; break; }
+  if(!g) return;
+  document.getElementById('cat-context').innerHTML =
+    '<strong>' + x(g.title) + '</strong><br>' +
+    (g.local?x(g.local)+' · ':'') + brl(g.valor);
+  // Build options
+  var opts = ['', 'limpeza', 'manutencao', 'energia', 'agua', 'condominio', 'iptu', 'outros'];
+  var html = '';
+  for(var j=0;j<opts.length;j++){
+    var val = opts[j];
+    var lbl = val === '' ? '🗑 Remover categoria' : CATEGORIA_LABELS[val];
+    var cls = 'cat-opt' + (val===''?' cat-opt-clear':'') + (val===(g.categoria||'') && val!==''?' active':'');
+    html += '<button class="'+cls+'" data-cat="'+val+'">'+lbl+'</button>';
+  }
+  document.getElementById('cat-options').innerHTML = html;
+  document.getElementById('ov-cat').classList.add('on');
+}
+function closeCategoriaModal(){
+  document.getElementById('ov-cat').classList.remove('on');
+  catEditingGid = null;
+}
+document.getElementById('btn-cancel-cat').addEventListener('click', function(){ closeCategoriaModal(); });
+document.getElementById('cat-options').addEventListener('click', function(e){
+  var btn = e.target.closest('.cat-opt');
+  if(!btn) return;
+  if(!catEditingGid) return;
+  var newCat = btn.dataset.cat || '';
+  for(var i=0;i<gastos.length;i++){
+    if(gastos[i].id === catEditingGid){
+      gastos[i].categoria = newCat;
+      break;
+    }
+  }
+  savG();
+  closeCategoriaModal();
+  render();
+  showToast(newCat ? '✓ Categoria atualizada' : '✓ Categoria removida');
+});
 document.getElementById('btn-cancel-exp').addEventListener('click', function(){ closeExport(); });
 
 // Dynamic export buttons via delegation
@@ -4123,13 +4361,14 @@ function openBackup(){
   renderPrediosList();
   renderLocaisList();
   populatePredioSelect('l-predio', '');
+  document.getElementById('version-label').textContent = APP_VERSION;
   document.getElementById('ov-backup').classList.add('on');
 }
 function closeBackup(){ document.getElementById('ov-backup').classList.remove('on'); }
 document.getElementById('btn-backup').addEventListener('click', function(){ openBackup(); });
 document.getElementById('btn-close-backup').addEventListener('click', function(){ closeBackup(); });
 document.getElementById('btn-do-backup').addEventListener('click', function(){
-  var data = {version:2, exportedAt:new Date().toISOString(), tasks:tasks, gastos:gastos, pessoas:pessoas, locais:locais, predios:predios};
+  var data = {version:APP_VERSION, exportedAt:new Date().toISOString(), tasks:tasks, gastos:gastos, pessoas:pessoas, locais:locais, predios:predios};
   var blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
@@ -4144,13 +4383,31 @@ document.getElementById('restore-file').addEventListener('change', function(e){
     try{
       var data = JSON.parse(ev.target.result);
       if(!data.tasks || !data.gastos) throw new Error('invalid');
+
+      // Validação: data do backup e versão (avisa se for muito antigo)
+      var warnings = [];
+      if(data.exportedAt){
+        var bkpDate = new Date(data.exportedAt);
+        var ageDays = Math.round((Date.now() - bkpDate.getTime()) / 86400000);
+        if(ageDays > 7){
+          warnings.push('⚠️ Backup com ' + ageDays + ' dias de idade.');
+        }
+      }
+      if(data.version && data.version !== APP_VERSION){
+        warnings.push('ℹ️ Backup feito na versão ' + data.version + ' (atual: ' + APP_VERSION + ').');
+      }
+      // Conta itens
+      var summary = data.tasks.length + ' tarefa(s) · ' + data.gastos.length + ' gasto(s)';
+
       tasks   = data.tasks;
       gastos  = data.gastos;
       pessoas = data.pessoas || [];
       locais  = migrateLocais(data.locais || []);
       predios = data.predios || [];
       savT(); savG(); savP(); savL(); savB(); render();
-      document.getElementById('restore-drop').textContent = '✅ '+file.name+' restaurado!';
+      var msg = '✅ ' + file.name + ' restaurado! ' + summary;
+      if(warnings.length) msg += ' ' + warnings.join(' ');
+      document.getElementById('restore-drop').textContent = msg;
       renderPessoasList();
       renderPrediosList();
       renderLocaisList();
@@ -4375,6 +4632,60 @@ function bar(pbId, ptId, done, total){
   document.getElementById(ptId).textContent  = done+'/'+total;
 }
 
+var CATEGORIA_LABELS = {
+  '':           '🏷️ + categoria',
+  'limpeza':    '🧹 Limpeza',
+  'manutencao': '🔧 Manutenção',
+  'energia':    '⚡ Energia',
+  'agua':       '💧 Água',
+  'condominio': '🏢 Condomínio',
+  'iptu':       '📄 IPTU',
+  'outros':     '📦 Outros'
+};
+
+/* PERIOD FILTER — estado e helper */
+var currentPeriod = 'all'; // all | month | last | custom
+var customFrom = null, customTo = null;
+function inPeriod(ts){
+  if(currentPeriod === 'all') return true;
+  var d = new Date(ts);
+  var now = new Date();
+  if(currentPeriod === 'month'){
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }
+  if(currentPeriod === 'last'){
+    var lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return d.getFullYear() === lm.getFullYear() && d.getMonth() === lm.getMonth();
+  }
+  if(currentPeriod === 'custom'){
+    if(!customFrom && !customTo) return true;
+    var ymd = d.toISOString().slice(0,10);
+    if(customFrom && ymd < customFrom) return false;
+    if(customTo && ymd > customTo) return false;
+    return true;
+  }
+  return true;
+}
+
+document.getElementById('period-filter').addEventListener('click', function(e){
+  var btn = e.target.closest('.pf-btn');
+  if(!btn) return;
+  var btns = document.querySelectorAll('.pf-btn');
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove('active');
+  btn.classList.add('active');
+  currentPeriod = btn.dataset.period;
+  document.getElementById('period-custom').style.display = (currentPeriod === 'custom') ? 'block' : 'none';
+  renderGastos();
+});
+document.getElementById('pf-from').addEventListener('change', function(e){
+  customFrom = e.target.value || null;
+  renderGastos();
+});
+document.getElementById('pf-to').addEventListener('change', function(e){
+  customTo = e.target.value || null;
+  renderGastos();
+});
+
 function expItemHtml(g, badgeType){
   var badge = '';
   if(badgeType==='exported') badge = '<span class="badge-exp">exportado</span>';
@@ -4386,11 +4697,14 @@ function expItemHtml(g, badgeType){
   var dataAttr = hasTask ? ' data-task-id="'+g.taskId+'"' : '';
   var editHint = hasTask ? '<span class="exp-edit-hint">✏️</span>' : '';
   var revertBtn = (badgeType==='exported') ? '<button class="exp-revert" data-gid="'+g.id+'" title="Reverter exportação">↩</button>' : '';
+  var catLbl = CATEGORIA_LABELS[g.categoria || ''] || ('🏷️ '+g.categoria);
+  var catChip = '<button class="exp-cat-chip'+(g.categoria?' set':'')+'" data-gid="'+g.id+'">'+catLbl+'</button>';
   return '<div class="exp-item'+(badgeType==='exported'?' exported':'')+clickable+'"'+dataAttr+'>'+
     '<div class="exp-dot '+CC[g.cc].dot+'"></div>'+
     '<div class="exp-body">'+
       '<div class="exp-ttl">'+x(g.title)+badge+'</div>'+
       '<div class="exp-sub">'+CC[g.cc].lbl+(g.local?' · '+x(g.local):'')+' · '+dt(g.ts)+'</div>'+
+      catChip+
     '</div>'+
     '<div class="exp-val">'+brl(g.valor)+editHint+'</div>'+
     revertBtn+
@@ -4400,7 +4714,9 @@ function expItemHtml(g, badgeType){
 function renderGastos(){
   var ccs = ['loft','alug','stay','pess','divs'];
   var total = 0;
-  for(var i=0;i<gastos.length;i++) total+=gastos[i].valor;
+  for(var i=0;i<gastos.length;i++){
+    if(inPeriod(gastos[i].ts)) total+=gastos[i].valor;
+  }
   document.getElementById('gs-total').textContent = brl(total);
 
   // Orphan warning — gastos whose task was deleted
@@ -4443,6 +4759,7 @@ function renderGastos(){
     var sum=0, readyCnt=0, waitCnt=0, allCnt=0;
     for(var i=0;i<gastos.length;i++){
       if(gastos[i].cc!==cc) continue;
+      if(!inPeriod(gastos[i].ts)) continue;
       allCnt++;
       sum += gastos[i].valor;
       if(gastos[i].exported) continue;
@@ -4458,10 +4775,11 @@ function renderGastos(){
   }
   document.getElementById('gs-grid').innerHTML = gridHtml;
 
-  // Sections: Waiting / Ready / Exported
+  // Sections: Waiting / Ready / Exported (com filtro de período aplicado)
   var allWaiting=[], allReady=[], allExported=[];
   for(var i=0;i<gastos.length;i++){
     var g = gastos[i];
+    if(!inPeriod(g.ts)) continue;
     if(g.exported) allExported.push(g);
     else if(isTaskDone(g.taskId)) allReady.push(g);
     else allWaiting.push(g);
@@ -4565,12 +4883,66 @@ render();
    PWA — Service Worker + Install Prompt
    ═══════════════════════════════════ */
 if('serviceWorker' in navigator){
+  // Listener pro postMessage do SW (quando SW novo assume controle)
+  var hasReloaded = false;
+  navigator.serviceWorker.addEventListener('message', function(e){
+    if(e.data && e.data.type === 'SW_UPDATED' && !hasReloaded){
+      hasReloaded = true;
+      console.log('🔄 SW novo detectado ('+e.data.version+'), recarregando...');
+      // Pequeno delay pra deixar o reload acontecer suavemente
+      setTimeout(function(){ window.location.reload(); }, 500);
+    }
+  });
+
+  // Quando o controller muda (novo SW assume), recarrega
+  var controllerChanged = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function(){
+    if(controllerChanged) return;
+    controllerChanged = true;
+    console.log('🔄 SW controller mudou, recarregando...');
+    window.location.reload();
+  });
+
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('service-worker.js').then(function(reg){
-      console.log('✅ App offline-ready');
+      console.log('✅ App registrado · ' + APP_VERSION);
+
+      // Verifica updates periodicamente
+      setInterval(function(){ reg.update().catch(function(){}); }, 60000); // a cada minuto
+
+      // Se há SW em waiting, mostra banner manual
+      if(reg.waiting){ showUpdateBanner(reg); }
+
+      // Quando novo SW for encontrado e instalado
+      reg.addEventListener('updatefound', function(){
+        var newSW = reg.installing;
+        if(!newSW) return;
+        newSW.addEventListener('statechange', function(){
+          if(newSW.state === 'installed' && navigator.serviceWorker.controller){
+            // Tem versão nova pronta
+            showUpdateBanner(reg);
+            // Auto-skipWaiting (atualiza sozinho sem perguntar)
+            newSW.postMessage({type:'SKIP_WAITING'});
+          }
+        });
+      });
     }).catch(function(err){
       console.warn('SW falhou:', err);
     });
+  });
+}
+
+function showUpdateBanner(reg){
+  var banner = document.getElementById('update-banner');
+  if(banner) return; // já está visível
+  banner = document.createElement('div');
+  banner.id = 'update-banner';
+  banner.innerHTML = '<span>✨ Versão nova disponível</span>' +
+                     '<button id="btn-reload-now">Recarregar agora</button>';
+  document.body.appendChild(banner);
+  document.getElementById('btn-reload-now').addEventListener('click', function(){
+    if(reg && reg.waiting){ reg.waiting.postMessage({type:'SKIP_WAITING'}); }
+    setTimeout(function(){ window.location.reload(); }, 300);
   });
 }
 

@@ -1,6 +1,7 @@
-// Service Worker — Tarefas Pedro
-// Cache version: bump quando atualizar para forçar refresh
-const CACHE = 'hub-pedro-v12';
+// Service Worker — Hub Pedro
+// v13: network-first pro HTML (força atualização imediata)
+const CACHE = 'hub-pedro-v13';
+const VERSION = 'v13';
 const FILES = [
   './',
   './index.html',
@@ -10,53 +11,85 @@ const FILES = [
   'https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Inter+Tight:wght@400;500;600;700&display=swap'
 ];
 
-// Install: pre-cache core files
+// Install: pre-cache e ativa IMEDIATAMENTE (sem esperar abas fecharem)
 self.addEventListener('install', function(e){
   self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE).then(function(cache){
       return cache.addAll(FILES).catch(function(err){
-        console.warn('Cache pré-fill incompleto:', err);
+        console.warn('Cache pre-fill incompleto:', err);
       });
     })
   );
 });
 
-// Activate: clean old caches
+// Activate: limpa caches antigos + assume controle + notifica clientes
 self.addEventListener('activate', function(e){
   e.waitUntil(
     caches.keys().then(function(keys){
       return Promise.all(keys.map(function(key){
-        if(key !== CACHE) return caches.delete(key);
+        if(key !== CACHE){
+          console.log('Deletando cache antigo:', key);
+          return caches.delete(key);
+        }
       }));
-    }).then(function(){ return self.clients.claim(); })
+    }).then(function(){
+      return self.clients.claim();
+    }).then(function(){
+      // Notifica todas as abas/PWA que o SW novo assumiu
+      return self.clients.matchAll({type:'window'}).then(function(clients){
+        clients.forEach(function(client){
+          client.postMessage({type:'SW_UPDATED', version: VERSION});
+        });
+      });
+    })
   );
 });
 
-// Fetch: cache-first for app shell, network-first for others
+// Fetch: network-first pro HTML, cache-first pros outros
 self.addEventListener('fetch', function(e){
-  const url = new URL(e.request.url);
-
-  // Only handle GET
   if(e.request.method !== 'GET') return;
+  var url = new URL(e.request.url);
 
-  // Cache-first strategy
-  e.respondWith(
-    caches.match(e.request).then(function(cached){
-      if(cached) return cached;
-      return fetch(e.request).then(function(res){
-        // Only cache successful same-origin responses
-        if(res && res.status === 200 && url.origin === self.location.origin){
-          const clone = res.clone();
+  // HTML/navigation: SEMPRE tenta rede primeiro (pega versão nova se houver)
+  if(e.request.mode === 'navigate' ||
+     e.request.destination === 'document' ||
+     url.pathname.endsWith('.html') ||
+     url.pathname.endsWith('/')){
+    e.respondWith(
+      fetch(e.request, {cache:'no-store'}).then(function(res){
+        if(res && res.status === 200){
+          var clone = res.clone();
           caches.open(CACHE).then(function(cache){ cache.put(e.request, clone); });
         }
         return res;
       }).catch(function(){
-        // Offline fallback: return the index for navigation requests
-        if(e.request.mode === 'navigate'){
-          return caches.match('./index.html');
+        return caches.match(e.request).then(function(cached){
+          return cached || caches.match('./index.html');
+        });
+      })
+    );
+    return;
+  }
+
+  // Outros assets (ícones, fontes): cache-first (mais rápido)
+  e.respondWith(
+    caches.match(e.request).then(function(cached){
+      if(cached) return cached;
+      return fetch(e.request).then(function(res){
+        if(res && res.status === 200 && url.origin === self.location.origin){
+          var clone = res.clone();
+          caches.open(CACHE).then(function(cache){ cache.put(e.request, clone); });
         }
+        return res;
+      }).catch(function(){
+        if(e.request.mode === 'navigate') return caches.match('./index.html');
       });
     })
   );
+});
+
+// Permite forçar update via mensagem do client (botão "Recarregar agora")
+self.addEventListener('message', function(e){
+  if(e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
