@@ -418,6 +418,120 @@ header::after{
 .fab:hover{transform:scale(1.06) rotate(90deg);box-shadow:0 0 32px rgba(61,169,252,.7),0 6px 20px -2px rgba(0,0,0,.7);}
 .fab:active{transform:scale(.92);}
 
+/* VOICE FAB */
+.fab-mic{
+  bottom:148px;
+  background:var(--paper);
+  border:2px solid var(--brand-dk);
+  color:var(--brand);
+  font-size:22px;
+  box-shadow:0 0 18px rgba(61,169,252,.3), 0 4px 14px -2px rgba(0,0,0,.6);
+}
+.fab-mic:hover{transform:scale(1.06);box-shadow:0 0 28px rgba(61,169,252,.55),0 6px 20px -2px rgba(0,0,0,.7);}
+.fab-mic.listening{
+  background:rgba(255,80,80,.15);
+  border-color:#FF5050;
+  color:#FF5050;
+  animation:micPulse 1s ease-in-out infinite;
+}
+@keyframes micPulse{
+  0%,100%{box-shadow:0 0 14px rgba(255,80,80,.4),0 4px 14px -2px rgba(0,0,0,.6);}
+  50%{box-shadow:0 0 28px rgba(255,80,80,.75),0 4px 14px -2px rgba(0,0,0,.6);}
+}
+
+/* VOICE MODAL */
+.voice-visualizer{
+  position:relative;
+  width:90px;
+  height:90px;
+  margin:10px auto 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.voice-rings{
+  position:absolute;
+  inset:0;
+}
+.voice-rings div{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  border:2px solid var(--brand);
+  opacity:0;
+  animation:voiceRing 2s ease-out infinite;
+}
+.voice-rings div:nth-child(2){animation-delay:.5s;}
+.voice-rings div:nth-child(3){animation-delay:1s;}
+@keyframes voiceRing{
+  0%{transform:scale(.5);opacity:.8;}
+  100%{transform:scale(1.5);opacity:0;}
+}
+.voice-mic-icon{
+  font-size:34px;
+  z-index:1;
+  position:relative;
+}
+.voice-examples{
+  margin:0 0 10px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.voice-ex{
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:9px;
+  padding:7px 10px;
+  font-size:11px;
+  color:var(--dim);
+  font-style:italic;
+  line-height:1.4;
+}
+.voice-interim-box{
+  min-height:44px;
+  background:var(--surf-2);
+  border:1px solid var(--brand-dk);
+  border-radius:10px;
+  padding:10px 12px;
+  font-size:13px;
+  color:var(--ink);
+  margin:8px 0 12px;
+  line-height:1.5;
+  font-style:italic;
+}
+.voice-transcript-box{
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px 12px;
+  font-size:12px;
+  color:var(--ink-2);
+  margin-bottom:12px;
+  line-height:1.5;
+  font-style:italic;
+}
+.voice-fields-card{
+  background:linear-gradient(135deg, var(--brand-tint) 0%, transparent 100%);
+  border:1px solid var(--brand-dk);
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.vf-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:12.5px;
+}
+.vf-icon{width:20px;text-align:center;flex-shrink:0;}
+.vf-label{color:var(--dim);font-size:10.5px;font-family:var(--font-display);font-weight:700;letter-spacing:.04em;text-transform:uppercase;width:70px;flex-shrink:0;}
+.vf-value{color:var(--ink);font-weight:600;flex:1;}
+.vf-none{color:var(--dim);font-style:italic;font-weight:400;}
+
 /* ═══ SECTION LABEL ═══ */
 .slabel{
   font-family:var(--font-display);
@@ -2746,6 +2860,55 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 </div>
 
 <button class="fab" id="fabBtn">+</button>
+<button class="fab fab-mic" id="btn-voice-fab">🎤</button>
+
+<!-- MODAL: COMANDO POR VOZ -->
+<div class="overlay" id="ov-voice">
+  <div class="modal" style="max-width:96vw;">
+    <div class="modal-handle"></div>
+    <h2>🎤 Comando por voz</h2>
+
+    <!-- ESTADO: ouvindo -->
+    <div id="voice-state-listening">
+      <div class="voice-visualizer">
+        <div class="voice-rings"><div></div><div></div><div></div></div>
+        <div class="voice-mic-icon">🎤</div>
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--dim);margin:10px 0 6px;">
+        Fale agora — descreva a tarefa ou gasto
+      </div>
+      <div class="voice-examples">
+        <div class="voice-ex">"Gasto de 180 reais conta de luz no SM 1202"</div>
+        <div class="voice-ex">"Criar tarefa de limpeza no Crystal 504 amanhã"</div>
+        <div class="voice-ex">"Manutenção no Walk Bueno 300 reais troca de torneira"</div>
+      </div>
+      <div class="voice-interim-box" id="voice-interim">...</div>
+      <div class="btn-row">
+        <button class="btn-s" id="btn-voice-cancel-listen">Cancelar</button>
+        <button class="btn-p" id="btn-voice-stop">⏹ Parei de falar</button>
+      </div>
+    </div>
+
+    <!-- ESTADO: processando -->
+    <div id="voice-state-processing" style="display:none;">
+      <div style="text-align:center;padding:30px 10px;">
+        <div class="ocr-spinner"></div>
+        <div style="font-family:var(--font-display);font-size:12px;color:var(--brand);margin-top:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;">Interpretando...</div>
+      </div>
+    </div>
+
+    <!-- ESTADO: resultado -->
+    <div id="voice-state-result" style="display:none;">
+      <div class="voice-transcript-box" id="voice-transcript-shown"></div>
+      <div id="voice-fields-card"></div>
+      <div class="err-msg" id="voice-err"></div>
+      <div class="btn-row">
+        <button class="btn-s" id="btn-voice-redo">🎤 Repetir</button>
+        <button class="btn-p" id="btn-voice-create">→ Criar tarefa</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL: NOVA TAREFA -->
 <div class="overlay" id="ov-new">
@@ -3288,12 +3451,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <input type="file" id="restore-file" accept=".json">
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v18</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v19</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v18';
+var APP_VERSION = 'v19';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -7318,6 +7481,264 @@ document.getElementById('btn-open-ocr').addEventListener('click', openOCR);
 document.getElementById('btn-close-ocr').addEventListener('click', closeOCR);
 document.getElementById('ov-ocr').addEventListener('click', function(e){
   if(e.target.id === 'ov-ocr') closeOCR();
+});
+
+// === V19: COMANDO POR VOZ ===
+var voiceRecognition = null;
+var voiceTranscript = '';
+var voiceParsed = null;
+
+function voiceSetState(state){
+  document.getElementById('voice-state-listening').style.display = state==='listening' ? 'block' : 'none';
+  document.getElementById('voice-state-processing').style.display = state==='processing' ? 'block' : 'none';
+  document.getElementById('voice-state-result').style.display = state==='result' ? 'block' : 'none';
+  document.getElementById('btn-voice-create').style.display = state==='result' ? 'inline-block' : 'none';
+}
+
+function openVoice(){
+  document.getElementById('ov-voice').classList.add('on');
+  document.getElementById('voice-interim').textContent = '...';
+  document.getElementById('voice-err').textContent = '';
+  document.getElementById('voice-fields-card').innerHTML = '';
+  voiceTranscript = '';
+  voiceParsed = null;
+  voiceSetState('listening');
+  startListening();
+}
+function closeVoice(){
+  stopListening();
+  document.getElementById('ov-voice').classList.remove('on');
+  document.getElementById('btn-voice-fab').classList.remove('listening');
+}
+
+function startListening(){
+  var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRec){
+    showToast('⚠️ Seu browser não suporta reconhecimento de voz. Use Chrome no Android.');
+    closeVoice();
+    return;
+  }
+  voiceRecognition = new SpeechRec();
+  voiceRecognition.continuous = true;
+  voiceRecognition.interimResults = true;
+  voiceRecognition.lang = 'pt-BR';
+  voiceRecognition.maxAlternatives = 1;
+  document.getElementById('btn-voice-fab').classList.add('listening');
+
+  voiceRecognition.onresult = function(e){
+    var interim = '';
+    var final = '';
+    for(var i = e.resultIndex; i < e.results.length; i++){
+      var res = e.results[i];
+      if(res.isFinal) final += res[0].transcript + ' ';
+      else interim += res[0].transcript;
+    }
+    if(final) voiceTranscript += final;
+    var display = voiceTranscript + interim;
+    document.getElementById('voice-interim').textContent = display || '...';
+  };
+
+  voiceRecognition.onerror = function(e){
+    if(e.error === 'no-speech') return; // ignorar silêncio
+    if(e.error === 'not-allowed'){
+      showToast('⚠️ Permita acesso ao microfone');
+      closeVoice();
+    }
+  };
+
+  voiceRecognition.onend = function(){
+    document.getElementById('btn-voice-fab').classList.remove('listening');
+    // Se foi parada automaticamente e ainda estamos em estado "listening", reinicia
+    if(document.getElementById('voice-state-listening').style.display !== 'none'){
+      if(voiceTranscript.trim().length > 3){
+        // Já tem texto suficiente — processa
+        processVoiceTranscript(voiceTranscript.trim());
+      }
+      // Se não tem texto, não faz nada (aguarda o usuário clicar em Parar)
+    }
+  };
+
+  try { voiceRecognition.start(); }
+  catch(e){}
+}
+
+function stopListening(){
+  document.getElementById('btn-voice-fab').classList.remove('listening');
+  if(voiceRecognition){
+    try { voiceRecognition.stop(); } catch(e){}
+    voiceRecognition = null;
+  }
+}
+
+function processVoiceTranscript(text){
+  if(!text || text.length < 3){
+    showToast('Não ouvi nada. Tente novamente.');
+    voiceSetState('listening');
+    startListening();
+    return;
+  }
+  stopListening();
+  voiceSetState('processing');
+
+  // Monta contexto de imóveis e categorias pra Claude
+  var imovelList = [];
+  for(var k in IMOVEL_INFO){
+    var info = IMOVEL_INFO[k];
+    imovelList.push(info.code + ' (' + info.sigla + ')' + (info.owner ? ' - ' + info.owner : ''));
+  }
+  var catList = [];
+  var all = getAllCategorias();
+  for(var i=0;i<all.length;i++) catList.push(all[i].val + ': ' + all[i].lbl);
+
+  var systemPrompt = 'Voce e um assistente de gestao de imoveis. Extraia campos de um comando por voz em portugues para criar uma tarefa ou gasto.\n' +
+    'Responda SOMENTE com JSON valido, sem explicacoes nem markdown.\n' +
+    'Campos possiveis:\n' +
+    '{\n' +
+    '  "titulo": string (descricao curta da tarefa),\n' +
+    '  "valor": number ou null (valor em reais, apenas numero),\n' +
+    '  "local": string ou null (nome exato ou aproximado do imovel),\n' +
+    '  "categoria": string ou null (codigo da categoria),\n' +
+    '  "prazo": string ou null (data YYYY-MM-DD, interprete "amanha" "semana que vem" etc),\n' +
+    '  "obs": string ou null (observacao adicional),\n' +
+    '  "acao": "tarefa" ou "gasto" (se menciona valor e nao e tarefa especifica, prefira "gasto")\n' +
+    '}\n\n' +
+    'Imoveis disponiveis: ' + imovelList.join(', ') + '\n' +
+    'Categorias: ' + catList.join(', ') + '\n' +
+    'Data atual: ' + new Date().toISOString().slice(0,10);
+
+  var userMsg = 'Comando por voz: "' + text + '"';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 400,
+      system: systemPrompt,
+      messages: [{role: 'user', content: userMsg}]
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    var raw = '';
+    if(data.content && data.content[0] && data.content[0].text){
+      raw = data.content[0].text.trim();
+    }
+    // Remove possível markdown
+    raw = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    try {
+      var parsed = JSON.parse(raw);
+      voiceParsed = parsed;
+      renderVoiceResult(text, parsed);
+      voiceSetState('result');
+    } catch(e){
+      document.getElementById('voice-err').textContent = 'Não consegui interpretar. Tente novamente.';
+      voiceSetState('result');
+      document.getElementById('voice-transcript-shown').textContent = '"' + text + '"';
+      document.getElementById('voice-fields-card').innerHTML = '';
+    }
+  })
+  .catch(function(err){
+    voiceSetState('result');
+    document.getElementById('voice-err').textContent = 'Erro de conexão. Verifique sua internet.';
+    document.getElementById('voice-transcript-shown').textContent = '"' + text + '"';
+    document.getElementById('voice-fields-card').innerHTML = '';
+  });
+}
+
+function renderVoiceResult(transcript, parsed){
+  document.getElementById('voice-transcript-shown').textContent = '"' + transcript + '"';
+  var catLbl = parsed.categoria ? (CATEGORIA_LABELS[parsed.categoria] || parsed.categoria) : null;
+  var valorStr = (parsed.valor && !isNaN(parsed.valor)) ? brl(parsed.valor) : null;
+  var prazoStr = parsed.prazo ? new Date(parsed.prazo + 'T12:00:00').toLocaleDateString('pt-BR') : null;
+  var html = '<div class="voice-fields-card">';
+  var rows = [
+    {icon:'📝', label:'Título', val:parsed.titulo},
+    {icon:'💰', label:'Valor',  val:valorStr},
+    {icon:'🏠', label:'Imóvel', val:parsed.local},
+    {icon:'🏷️', label:'Categ.',  val:catLbl},
+    {icon:'📅', label:'Prazo',  val:prazoStr}
+  ];
+  for(var i=0;i<rows.length;i++){
+    var r = rows[i];
+    html += '<div class="vf-row">' +
+      '<div class="vf-icon">'+r.icon+'</div>' +
+      '<div class="vf-label">'+r.label+'</div>' +
+      '<div class="vf-value '+(r.val?'':'vf-none')+'">'+(r.val ? x(r.val) : '—')+'</div>' +
+    '</div>';
+  }
+  html += '</div>';
+  document.getElementById('voice-fields-card').innerHTML = html;
+  document.getElementById('voice-err').textContent = '';
+}
+
+document.getElementById('btn-voice-stop').addEventListener('click', function(){
+  var text = voiceTranscript.trim() ||
+             document.getElementById('voice-interim').textContent.trim();
+  if(text && text !== '...'){
+    voiceTranscript = text;
+    processVoiceTranscript(text);
+  } else {
+    showToast('Não ouvi nada ainda. Continue falando.');
+  }
+});
+
+document.getElementById('btn-voice-cancel-listen').addEventListener('click', closeVoice);
+
+document.getElementById('btn-voice-redo').addEventListener('click', function(){
+  voiceTranscript = '';
+  document.getElementById('voice-interim').textContent = '...';
+  document.getElementById('voice-err').textContent = '';
+  voiceParsed = null;
+  voiceSetState('listening');
+  startListening();
+});
+
+document.getElementById('btn-voice-create').addEventListener('click', function(){
+  if(!voiceParsed) return;
+  var parsed = voiceParsed;
+  closeVoice();
+  openNew();
+  setTimeout(function(){
+    if(parsed.titulo) document.getElementById('f-title').value = parsed.titulo;
+    if(parsed.valor && !isNaN(parsed.valor)) document.getElementById('f-custo').value = parseFloat(parsed.valor).toFixed(2);
+    if(parsed.prazo) document.getElementById('f-prazo').value = parsed.prazo;
+    if(parsed.obs) document.getElementById('f-obs').value = parsed.obs;
+    if(parsed.categoria) populateCategoriaSelect('f-categoria', parsed.categoria);
+    // Tenta setar imóvel se encontrar match
+    if(parsed.local){
+      var localNorm = parsed.local.toLowerCase();
+      var bestMatch = null;
+      for(var i=0;i<locais.length;i++){
+        if(locais[i].nome.toLowerCase().indexOf(localNorm) !== -1 ||
+           localNorm.indexOf(locais[i].nome.toLowerCase()) !== -1){
+          bestMatch = locais[i].nome;
+          break;
+        }
+      }
+      // Tenta também por código (ex: "WB" ou "SM-1202")
+      if(!bestMatch){
+        for(var k in IMOVEL_INFO){
+          var info = IMOVEL_INFO[k];
+          if(localNorm.indexOf(info.sigla.toLowerCase()) !== -1 ||
+             (info.code && localNorm.indexOf(info.code.toLowerCase()) !== -1)){
+            // Encontra o local com esse nome
+            for(var i=0;i<locais.length;i++){
+              if(locais[i].nome === k){ bestMatch = k; break; }
+            }
+            break;
+          }
+        }
+      }
+      if(bestMatch) populateLocalSelect('f', bestMatch);
+    }
+    showToast('🎤 Dados aplicados — revise e confirme');
+  }, 300);
+});
+
+document.getElementById('btn-voice-fab').addEventListener('click', openVoice);
+document.getElementById('ov-voice').addEventListener('click', function(e){
+  if(e.target.id === 'ov-voice') closeVoice();
 });
 
 /* === V15: TEMPLATES, SUGESTÃO, HOJE, FECHAR MÊS === */
