@@ -1681,6 +1681,74 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   line-height:1.5;
 }
 
+/* === OCR DE BOLETO === */
+.btn-ocr{
+  width:100%;
+  background:linear-gradient(135deg, var(--brand-tint) 0%, transparent 100%);
+  border:1px solid var(--brand-dk);
+  color:var(--brand-lt);
+  border-radius:11px;
+  padding:12px;
+  font-family:var(--font-display);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  cursor:pointer;
+  margin-bottom:10px;
+  transition:all .15s;
+}
+.btn-ocr:hover{background:var(--brand-tint);box-shadow:0 0 16px rgba(61,169,252,.3);}
+.btn-ocr:active{transform:scale(.98);}
+
+.ocr-spinner{
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:3px solid var(--surf-2);
+  border-top-color:var(--brand);
+  margin:0 auto;
+  animation:ocrSpin 1s linear infinite;
+}
+@keyframes ocrSpin{
+  to{transform:rotate(360deg);}
+}
+.ocr-progress-bar{
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  height:6px;
+  border-radius:3px;
+  margin-top:12px;
+  overflow:hidden;
+}
+.ocr-progress-fill{
+  background:linear-gradient(90deg, var(--brand-dk), var(--brand));
+  height:100%;
+  width:0%;
+  transition:width .25s ease;
+  border-radius:3px;
+}
+#ocr-preview-wrap{
+  width:100%;
+  max-height:160px;
+  overflow:hidden;
+  border-radius:11px;
+  margin-bottom:14px;
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#ocr-preview-wrap img{
+  max-width:100%;
+  max-height:160px;
+  object-fit:contain;
+}
+.ocr-fields{
+  margin-top:6px;
+}
+
 .dash-period-row{
   display:flex;
   gap:5px;
@@ -2649,6 +2717,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <button class="btn-report" id="btn-open-proprietarios">💰 Por proprietário</button>
     <button class="btn-report" id="btn-open-pdf">📄 PDF do mês</button>
   </div>
+  <button class="btn-ocr" id="btn-open-ocr">📸 Tirar foto de boleto / nota</button>
   <button class="btn-close-month" id="btn-fechar-mes" style="display:none;">📅 Fechar mês passado (preparar exportação)</button>
   <div class="period-filter" id="period-filter">
     <button class="pf-btn active" data-period="all">Todos</button>
@@ -3053,6 +3122,62 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   </div>
 </div>
 
+<!-- MODAL: OCR DE BOLETO -->
+<div class="overlay" id="ov-ocr">
+  <div class="modal" style="max-width:96vw;max-height:92vh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <h2>📸 OCR de boleto / nota</h2>
+
+    <!-- ESTADO 1: vazio (botão pra tirar/selecionar foto) -->
+    <div id="ocr-state-empty">
+      <p style="font-size:12px;color:var(--dim);line-height:1.55;margin-bottom:14px;">
+        Tire uma foto do boleto ou recibo. Vou extrair <strong>valor</strong> e <strong>vencimento</strong> automaticamente e sugerir categoria.
+        <br><br>
+        <strong style="color:var(--brand-lt);">1ª execução:</strong> baixa ~5 MB do mecanismo de OCR (fica em cache, próximas vezes são rápidas).
+      </p>
+      <button class="btn-add-photo" id="btn-ocr-pick">📸 Tirar foto / Escolher arquivo</button>
+      <input type="file" id="ocr-file" accept="image/*" capture="environment" style="display:none;">
+    </div>
+
+    <!-- ESTADO 2: processando -->
+    <div id="ocr-state-loading" style="display:none;">
+      <div style="text-align:center;padding:30px 10px;">
+        <div class="ocr-spinner"></div>
+        <div id="ocr-progress-label" style="font-family:var(--font-display);font-size:12px;color:var(--brand);margin-top:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;">Carregando OCR...</div>
+        <div class="ocr-progress-bar"><div class="ocr-progress-fill" id="ocr-progress-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- ESTADO 3: resultado -->
+    <div id="ocr-state-result" style="display:none;">
+      <div id="ocr-preview-wrap"></div>
+      <div class="ocr-fields">
+        <label class="flabel">💸 Valor detectado</label>
+        <div class="cost-inline">
+          <span class="cost-inline-lbl">💸</span>
+          <span class="cost-currency">R$</span>
+          <input id="ocr-valor" type="number" min="0" step="0.01" placeholder="0,00">
+        </div>
+        <label class="flabel">📅 Vencimento detectado</label>
+        <input class="finput" id="ocr-vencimento" type="date">
+        <label class="flabel">🏷 Categoria sugerida</label>
+        <select class="finput" id="ocr-categoria"></select>
+        <label class="flabel">📝 Descrição</label>
+        <input class="finput" id="ocr-descricao" type="text" placeholder="Ex: Conta de luz CEMIG">
+        <details style="margin-top:12px;">
+          <summary style="font-size:11px;color:var(--dim);cursor:pointer;">Ver texto extraído</summary>
+          <pre id="ocr-raw-text" style="font-size:10px;line-height:1.5;background:var(--surf-2);padding:10px;border-radius:8px;margin-top:6px;max-height:160px;overflow:auto;color:var(--dim);white-space:pre-wrap;word-break:break-all;border:1px solid var(--line);"></pre>
+        </details>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-s" id="btn-close-ocr">Cancelar</button>
+      <button class="btn-p" id="btn-ocr-create" style="display:none;">→ Criar tarefa</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: WHATSAPP -->
 <div class="overlay" id="ov-wa">
   <div class="modal">
@@ -3163,12 +3288,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <input type="file" id="restore-file" accept=".json">
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v17.1</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v18</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v17.1';
+var APP_VERSION = 'v18';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -6964,6 +7089,236 @@ document.querySelectorAll('.prop-pf').forEach(function(btn){
 });
 
 document.getElementById('btn-open-pdf').addEventListener('click', openPDFMonth);
+
+// === V18: OCR DE BOLETO ===
+var ocrResult = null;       // Resultado do último OCR {valor, vencimento, categoria, descricao, raw}
+var tesseractWorker = null; // Worker do Tesseract (mantido entre execuções)
+
+// Carrega Tesseract.js sob demanda via CDN
+function loadTesseract(){
+  return new Promise(function(resolve, reject){
+    if(window.Tesseract){ resolve(window.Tesseract); return; }
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    script.crossOrigin = 'anonymous';
+    script.onload = function(){
+      if(window.Tesseract) resolve(window.Tesseract);
+      else reject(new Error('Tesseract não carregou'));
+    };
+    script.onerror = function(){
+      reject(new Error('Falha no download do OCR. Verifique sua conexão.'));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+function openOCR(){
+  document.getElementById('ov-ocr').classList.add('on');
+  document.getElementById('ocr-state-empty').style.display = 'block';
+  document.getElementById('ocr-state-loading').style.display = 'none';
+  document.getElementById('ocr-state-result').style.display = 'none';
+  document.getElementById('btn-ocr-create').style.display = 'none';
+  document.getElementById('ocr-file').value = '';
+  ocrResult = null;
+}
+function closeOCR(){
+  document.getElementById('ov-ocr').classList.remove('on');
+}
+
+function ocrSetProgress(pct, label){
+  var fill = document.getElementById('ocr-progress-fill');
+  if(fill) fill.style.width = Math.max(2, Math.min(100, pct)) + '%';
+  if(label){
+    var lbl = document.getElementById('ocr-progress-label');
+    if(lbl) lbl.textContent = label;
+  }
+}
+
+// Heurísticas pra extrair dados de boletos brasileiros
+function parseBoletoText(text){
+  var result = {valor:null, vencimento:null, categoria:'', descricao:'', raw:text};
+  var t = text.replace(/\r/g,'\n');
+
+  // === VALOR ===
+  // Procura padrões "R$ X.XXX,XX" ou "Valor X.XXX,XX" ou linhas com "Total"
+  var valorCandidatos = [];
+  var rxValor = /(?:R\$|VALOR|TOTAL|COBRAD[OA]|DOCUMENTO)\s*[:\.]*\s*([0-9]{1,3}(?:[\.\s]?\d{3})*[,\.]\d{2})/gi;
+  var m;
+  while((m = rxValor.exec(t)) !== null){
+    var num = m[1].replace(/[\.\s]/g,'').replace(',','.');
+    var v = parseFloat(num);
+    if(!isNaN(v) && v > 0 && v < 1000000) valorCandidatos.push(v);
+  }
+  // Se não achou com prefixo, tenta isolado "X,XX" — pega o maior (geralmente é o total)
+  if(!valorCandidatos.length){
+    var rxIsolado = /\b([0-9]{1,3}(?:\.\d{3})*,\d{2})\b/g;
+    while((m = rxIsolado.exec(t)) !== null){
+      var num = m[1].replace(/\./g,'').replace(',','.');
+      var v = parseFloat(num);
+      if(!isNaN(v) && v > 0 && v < 1000000) valorCandidatos.push(v);
+    }
+  }
+  if(valorCandidatos.length){
+    // Geralmente o valor cobrado é o maior, mas não o mais alto absurdo. Vou pegar o maior.
+    valorCandidatos.sort(function(a,b){ return b - a; });
+    result.valor = valorCandidatos[0];
+  }
+
+  // === VENCIMENTO ===
+  // DD/MM/YYYY ou DD-MM-YYYY ou DDMMYYYY
+  var rxData = /(?:VENCIMENTO|VENCTO|VENC|VENCE|DATA\s*VENC|VENC\.)[:\s\.]*(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{4})/gi;
+  m = rxData.exec(t);
+  if(m){
+    result.vencimento = m[3] + '-' + m[2] + '-' + m[1];
+  } else {
+    // Sem prefixo: pega a data mais futura entre as encontradas (provavelmente é a de vencimento)
+    var rxDatas = /\b(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{4})\b/g;
+    var datas = [];
+    while((m = rxDatas.exec(t)) !== null){
+      var dia = parseInt(m[1]), mes = parseInt(m[2]), ano = parseInt(m[3]);
+      if(dia >= 1 && dia <= 31 && mes >= 1 && mes <= 12 && ano >= 2020 && ano <= 2099){
+        datas.push({d: m[1], m: m[2], a: m[3], ts: new Date(ano, mes-1, dia).getTime()});
+      }
+    }
+    // Pega a data mais distante no futuro (vencimento tipicamente está no futuro)
+    if(datas.length){
+      var now = Date.now();
+      var futuras = datas.filter(function(d){ return d.ts >= now - 86400000; });
+      if(futuras.length){
+        futuras.sort(function(a,b){ return a.ts - b.ts; }); // mais próxima primeiro
+        var pick = futuras[0];
+        result.vencimento = pick.a + '-' + pick.m + '-' + pick.d;
+      } else {
+        // Sem datas futuras, pega a mais recente
+        datas.sort(function(a,b){ return b.ts - a.ts; });
+        var pick = datas[0];
+        result.vencimento = pick.a + '-' + pick.m + '-' + pick.d;
+      }
+    }
+  }
+
+  // === CATEGORIA (por palavras-chave do beneficiário) ===
+  var tUp = t.toUpperCase();
+  var keywords = [
+    {cat:'energia',    words:['CEMIG','EQUATORIAL','ENEL','ENERGISA','ELETROBRAS','LIGHT','COELBA','CELESC','CELG','COPEL','ELEKTRO','EDP','CPFL','NEOENERGIA']},
+    {cat:'agua',       words:['SANEAGO','SABESP','BRK','CASAN','CAGECE','COPASA','SANEPAR','EMBASA','COMPESA','CAESB','AGUAS','SANEAMENTO']},
+    {cat:'gas',        words:['COMPAGAS','COMGAS','GASMIG','SCGAS','BAHIAGAS','GASBRASILIANO']},
+    {cat:'internet',   words:['VIVO','CLARO','OI','TIM','NET','ALGAR','SKY','SUMICITY','NETHIPER','GIGA','FIBRA']},
+    {cat:'condominio', words:['CONDOMINIO','CONDOMÍNIO','CONDOM','ADMINISTRADORA','SINDICO']},
+    {cat:'iptu',       words:['IPTU','PREFEITURA','MUNICIPAL','IMPOSTO PREDIAL']}
+  ];
+  for(var i=0;i<keywords.length;i++){
+    for(var j=0;j<keywords[i].words.length;j++){
+      if(tUp.indexOf(keywords[i].words[j]) !== -1){
+        result.categoria = keywords[i].cat;
+        // Sugere descrição com a primeira palavra-chave encontrada
+        var word = keywords[i].words[j];
+        var catLbl = CATEGORIA_LABELS[result.categoria] || result.categoria;
+        var clean = catLbl.replace(/^[^\w]+/, ''); // remove emoji
+        result.descricao = clean + ' ' + word.charAt(0) + word.slice(1).toLowerCase();
+        break;
+      }
+    }
+    if(result.categoria) break;
+  }
+
+  return result;
+}
+
+document.getElementById('btn-ocr-pick').addEventListener('click', function(){
+  document.getElementById('ocr-file').click();
+});
+
+document.getElementById('ocr-file').addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  // Mostra estado loading
+  document.getElementById('ocr-state-empty').style.display = 'none';
+  document.getElementById('ocr-state-loading').style.display = 'block';
+  document.getElementById('ocr-state-result').style.display = 'none';
+  ocrSetProgress(2, 'Carregando OCR...');
+
+  // Comprime imagem antes de processar (Tesseract trabalha melhor com tamanhos médios)
+  compressImage(file, 1600, 0.85).then(function(dataUrl){
+    ocrSetProgress(10, 'Imagem otimizada');
+    return loadTesseract().then(function(Tesseract){
+      ocrSetProgress(20, 'Mecanismo OCR carregado');
+      return Tesseract.recognize(dataUrl, 'eng', {
+        logger: function(m){
+          if(m.status === 'loading tesseract core') ocrSetProgress(25, 'Baixando engine...');
+          else if(m.status === 'initializing tesseract') ocrSetProgress(35, 'Inicializando...');
+          else if(m.status === 'loading language traineddata') ocrSetProgress(40 + (m.progress||0) * 25, 'Baixando idioma...');
+          else if(m.status === 'initializing api') ocrSetProgress(65, 'Pronto pra ler...');
+          else if(m.status === 'recognizing text') ocrSetProgress(70 + (m.progress||0) * 28, 'Lendo boleto...');
+        }
+      }).then(function(out){
+        return {text: out.data.text, preview: dataUrl};
+      });
+    });
+  }).then(function(data){
+    ocrSetProgress(100, 'Concluído ✓');
+    setTimeout(function(){
+      // Parse
+      var parsed = parseBoletoText(data.text);
+      ocrResult = parsed;
+      // Render result
+      document.getElementById('ocr-state-loading').style.display = 'none';
+      document.getElementById('ocr-state-result').style.display = 'block';
+      document.getElementById('btn-ocr-create').style.display = 'inline-block';
+      document.getElementById('ocr-preview-wrap').innerHTML = '<img src="'+data.preview+'" alt="">';
+      document.getElementById('ocr-valor').value = parsed.valor || '';
+      document.getElementById('ocr-vencimento').value = parsed.vencimento || '';
+      document.getElementById('ocr-descricao').value = parsed.descricao || '';
+      populateCategoriaSelect('ocr-categoria', parsed.categoria || '', '— Sem categoria —');
+      document.getElementById('ocr-raw-text').textContent = data.text;
+      // Toast com resumo
+      var msg = '✓ OCR concluído';
+      if(parsed.valor) msg += ' · R$ ' + parsed.valor.toFixed(2).replace('.',',');
+      showToast(msg);
+    }, 400);
+  }).catch(function(err){
+    document.getElementById('ocr-state-loading').style.display = 'none';
+    document.getElementById('ocr-state-empty').style.display = 'block';
+    showToast('⚠️ ' + err.message);
+  });
+  e.target.value = '';
+});
+
+document.getElementById('btn-ocr-create').addEventListener('click', function(){
+  if(!ocrResult) return;
+  // Pega os campos editados pelo usuário
+  var valor = parseFloat(document.getElementById('ocr-valor').value);
+  var vencimento = document.getElementById('ocr-vencimento').value;
+  var categoria = document.getElementById('ocr-categoria').value;
+  var descricao = document.getElementById('ocr-descricao').value.trim() || 'Gasto via OCR';
+
+  // Fecha OCR
+  closeOCR();
+  // Abre modal de nova tarefa pré-populado
+  openNew();
+  setTimeout(function(){
+    document.getElementById('f-title').value = descricao;
+    if(!isNaN(valor) && valor > 0) document.getElementById('f-custo').value = valor.toFixed(2);
+    if(vencimento) document.getElementById('f-prazo').value = vencimento;
+    // Categoria
+    if(categoria){
+      populateCategoriaSelect('f-categoria', categoria);
+    }
+    // Pré-seleciona CC mais provável: stay (imóvel) — usuário pode mudar
+    pickCC = 'stay';
+    var opts = document.querySelectorAll('#cc-grid .cc-opt');
+    for(var i=0;i<opts.length;i++){
+      opts[i].className = 'cc-opt' + (opts[i].dataset.cc==='stay' ? ' '+CC.stay.sel : '');
+    }
+    showToast('📸 Dados aplicados — revise e confirme');
+  }, 300);
+});
+
+document.getElementById('btn-open-ocr').addEventListener('click', openOCR);
+document.getElementById('btn-close-ocr').addEventListener('click', closeOCR);
+document.getElementById('ov-ocr').addEventListener('click', function(e){
+  if(e.target.id === 'ov-ocr') closeOCR();
+});
 
 /* === V15: TEMPLATES, SUGESTÃO, HOJE, FECHAR MÊS === */
 

@@ -1,7 +1,7 @@
 // Service Worker — Hub Pedro
-// v13: network-first pro HTML (força atualização imediata)
-const CACHE = 'hub-pedro-v17-1';
-const VERSION = 'v17.1';
+// v18: network-first pro HTML + cache de assets OCR (Tesseract)
+const CACHE = 'hub-pedro-v18';
+const VERSION = 'v18';
 const FILES = [
   './',
   './index.html',
@@ -72,14 +72,29 @@ self.addEventListener('fetch', function(e){
     return;
   }
 
-  // Outros assets (ícones, fontes): cache-first (mais rápido)
+  // Outros assets (ícones, fontes, OCR): cache-first (mais rápido)
   e.respondWith(
     caches.match(e.request).then(function(cached){
       if(cached) return cached;
       return fetch(e.request).then(function(res){
-        if(res && res.status === 200 && url.origin === self.location.origin){
-          var clone = res.clone();
-          caches.open(CACHE).then(function(cache){ cache.put(e.request, clone); });
+        if(res && res.status === 200){
+          // Cacheia se: same-origin OU asset de OCR (Tesseract.js, traineddata, wasm)
+          var isTesseractAsset =
+            url.hostname.indexOf('jsdelivr.net') !== -1 ||
+            url.hostname.indexOf('tessdata') !== -1 ||
+            url.hostname.indexOf('githubusercontent') !== -1 ||
+            url.hostname.indexOf('raw.githubusercontent') !== -1 ||
+            url.pathname.indexOf('tesseract') !== -1 ||
+            url.pathname.endsWith('.wasm') ||
+            url.pathname.endsWith('.wasm.js') ||
+            url.pathname.endsWith('.traineddata') ||
+            url.pathname.endsWith('.traineddata.gz');
+          if(url.origin === self.location.origin || isTesseractAsset){
+            var clone = res.clone();
+            caches.open(CACHE).then(function(cache){
+              cache.put(e.request, clone).catch(function(){});
+            });
+          }
         }
         return res;
       }).catch(function(){
