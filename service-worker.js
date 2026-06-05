@@ -1,7 +1,7 @@
 // Service Worker — Hub Pedro
 // v13: network-first pro HTML (força atualização imediata)
-const CACHE = 'hub-pedro-v16-1';
-const VERSION = 'v16.1';
+const CACHE = 'hub-pedro-v17';
+const VERSION = 'v17';
 const FILES = [
   './',
   './index.html',

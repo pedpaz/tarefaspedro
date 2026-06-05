@@ -1365,6 +1365,25 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   object-fit:cover;
   display:block;
 }
+.new-photo-thumb{position:relative;}
+.new-photo-thumb .photo-thumb-x{
+  position:absolute;
+  top:3px; right:3px;
+  width:20px; height:20px;
+  border-radius:50%;
+  background:rgba(255,107,107,.9);
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  pointer-events:none;
+  box-shadow:0 1px 4px rgba(0,0,0,.4);
+}
+.new-photo-thumb:hover{border-color:#FF6B6B;}
+.new-photo-thumb:active{transform:scale(.92);}
 
 .btn-add-photo{
   width:100%;
@@ -2507,6 +2526,10 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <label class="flabel">Sub-itens (checklist)</label>
     <div id="f-subtasks-list" class="subtasks-list"></div>
     <button type="button" class="btn-add-subtask" id="f-add-subtask">+ Adicionar sub-item</button>
+    <label class="flabel">📷 Fotos</label>
+    <div id="f-photos-grid" class="photos-grid"></div>
+    <button type="button" class="btn-add-photo" id="btn-add-photo-new">📷 + Adicionar foto</button>
+    <input type="file" id="f-photo-file" accept="image/*" capture="environment" style="display:none;">
     <label class="flabel">Responsável (opcional)</label>
     <select class="finput" id="f-pessoa">
       <option value="">— Sem responsável —</option>
@@ -2913,12 +2936,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <input type="file" id="restore-file" accept=".json">
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v16.1</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v17</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v16.1';
+var APP_VERSION = 'v17';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -3289,6 +3312,9 @@ var expTargetCC  = null;
 /* Subtasks temp arrays (used during modal session) */
 var tempSubtasksF = [];
 var tempSubtasksE = [];
+
+/* Photos temp array (during new task creation) */
+var tempPhotosF = [];
 
 /* Mass selection state */
 var selectMode = false;
@@ -3673,6 +3699,8 @@ function openNew(){
   for(var i=0;i<opts.length;i++) opts[i].className='cc-opt';
   tempSubtasksF = [];
   renderSubtasksUI('f', tempSubtasksF);
+  tempPhotosF = [];
+  renderNewPhotos();
   multiImoveis = [];
   updateMultiSummary();
   document.getElementById('ov-new').classList.add('on');
@@ -3722,7 +3750,8 @@ document.getElementById('btn-save-task').addEventListener('click', function(){
     prazo:  document.getElementById('f-prazo').value,
     subtasks: tempSubtasksF.slice(),
     categoria: document.getElementById('f-categoria').value || '',
-    done: document.getElementById('f-done').checked
+    done: document.getElementById('f-done').checked,
+    fotos: tempPhotosF.slice()
   };
   var custoVal = parseFloat(document.getElementById('f-custo').value);
   if(isNaN(custoVal)) custoVal = 0;
@@ -3750,7 +3779,8 @@ document.getElementById('btn-save-task').addEventListener('click', function(){
     prazo:  taskData.prazo,
     done:  doneFlag,
     ts:    Date.now(),
-    subtasks: taskData.subtasks
+    subtasks: taskData.subtasks,
+    fotos: taskData.fotos || []
   };
   tasks.unshift(t);
   // Create gasto if cost was provided
@@ -4202,7 +4232,8 @@ function createMultiTasks(data, costMode){
       prazo:  task.prazo,
       done:   task.done || false,
       ts:     Date.now() + i, // slight offset to keep order
-      subtasks: task.subtasks ? task.subtasks.slice() : []
+      subtasks: task.subtasks ? task.subtasks.slice() : [],
+      fotos: task.fotos ? task.fotos.slice() : []
     };
     tasks.unshift(t);
     if(perImovel > 0){
@@ -5958,6 +5989,54 @@ document.getElementById('e-photo-file').addEventListener('change', function(e){
     showToast('Erro: ' + err.message);
   });
   e.target.value = '';
+});
+
+// === FOTOS NA CRIAÇÃO DE TAREFA (v17) ===
+function renderNewPhotos(){
+  var el = document.getElementById('f-photos-grid');
+  if(!el) return;
+  if(!tempPhotosF.length){ el.innerHTML = ''; return; }
+  var html = '';
+  for(var i=0;i<tempPhotosF.length;i++){
+    html += '<div class="photo-thumb new-photo-thumb" data-pidx="'+i+'" title="Toque pra remover">'+
+              '<img src="'+tempPhotosF[i]+'" alt="">'+
+              '<div class="photo-thumb-x">×</div>'+
+            '</div>';
+  }
+  el.innerHTML = html;
+}
+
+document.getElementById('btn-add-photo-new').addEventListener('click', function(){
+  document.getElementById('f-photo-file').click();
+});
+
+document.getElementById('f-photo-file').addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var btn = document.getElementById('btn-add-photo-new');
+  btn.classList.add('uploading');
+  btn.textContent = '⏳ Processando...';
+  compressImage(file, 1280, 0.72).then(function(dataUrl){
+    tempPhotosF.push(dataUrl);
+    renderNewPhotos();
+    btn.classList.remove('uploading');
+    btn.textContent = '📷 + Adicionar foto';
+  }).catch(function(err){
+    btn.classList.remove('uploading');
+    btn.textContent = '📷 + Adicionar foto';
+    showToast('Erro: ' + err.message);
+  });
+  e.target.value = '';
+});
+
+// Click numa thumb durante CRIAÇÃO remove a foto (não abre fullscreen)
+document.getElementById('f-photos-grid').addEventListener('click', function(e){
+  var thumb = e.target.closest('.new-photo-thumb');
+  if(!thumb) return;
+  var idx = parseInt(thumb.dataset.pidx);
+  if(isNaN(idx)) return;
+  tempPhotosF.splice(idx, 1);
+  renderNewPhotos();
 });
 
 // Click em thumbnail abre fullscreen
