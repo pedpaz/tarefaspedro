@@ -1152,6 +1152,162 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 }
 .cat-group-label:first-child{margin-top:2px;}
 
+/* === V15 ADDITIONS === */
+/* Hoje panel */
+.hoje-header{
+  text-align:center;
+  margin-bottom:18px;
+  padding:14px 16px;
+  background:linear-gradient(135deg, var(--brand-tint) 0%, transparent 100%);
+  border-radius:14px;
+  border:1px solid var(--brand-dk);
+}
+.hoje-date{
+  font-family:var(--font-display);
+  font-size:11px;
+  font-weight:700;
+  color:var(--brand);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.hoje-summary{
+  font-size:14px;
+  color:var(--ink);
+  margin-top:6px;
+  font-weight:500;
+}
+.hoje-section-header{
+  font-family:var(--font-display);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin:18px 4px 8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.hoje-section-header.overdue{color:#FF6B6B;}
+.hoje-section-header.today{color:#F5B962;}
+.hoje-section-header.done{color:var(--loft);opacity:.75;}
+.hoje-section-header .count{
+  font-size:10px;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--line);
+  padding:2px 8px;
+  border-radius:10px;
+}
+
+/* Template button */
+.btn-template-trigger{
+  width:100%;
+  background:var(--surf-2);
+  border:1px dashed var(--brand);
+  color:var(--brand);
+  border-radius:10px;
+  padding:9px;
+  font-family:var(--font-display);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  cursor:pointer;
+  margin-bottom:14px;
+  transition:all .15s;
+}
+.btn-template-trigger:hover{background:var(--brand-tint);}
+.btn-template-trigger:active{transform:scale(.98);}
+
+.tpl-item{
+  background:var(--surf);
+  border:1px solid var(--line);
+  border-radius:11px;
+  padding:11px 14px;
+  cursor:pointer;
+  text-align:left;
+  transition:all .15s;
+  font-family:inherit;
+  color:var(--ink);
+  display:block;
+  width:100%;
+}
+.tpl-item:hover{border-color:var(--brand);background:var(--brand-tint);}
+.tpl-item:active{transform:scale(.98);}
+.tpl-item .tpl-name{
+  font-size:13.5px;
+  font-weight:700;
+  margin-bottom:3px;
+}
+.tpl-item .tpl-meta{
+  font-size:11px;
+  color:var(--dim);
+}
+
+/* Suggestion banner */
+#cat-suggestion{
+  background:var(--brand-tint);
+  border:1px solid var(--brand-dk);
+  border-radius:10px;
+  padding:8px 12px;
+  margin:8px 0;
+  font-size:12px;
+  color:var(--brand-lt);
+  cursor:pointer;
+}
+#cat-suggestion strong{color:var(--brand);}
+#cat-suggestion:hover{background:var(--brand-dk);color:#fff;}
+#cat-suggestion .dismiss{
+  float:right;
+  opacity:.5;
+  margin-left:8px;
+  font-size:11px;
+}
+
+/* Checkbox "Já concluída" */
+.check-done{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-top:12px;
+  padding:10px 12px;
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:10px;
+  cursor:pointer;
+  font-size:13px;
+  color:var(--ink-2);
+  transition:all .15s;
+}
+.check-done:hover{border-color:var(--loft);background:rgba(163,255,18,.06);}
+.check-done input{
+  width:18px;
+  height:18px;
+  accent-color:var(--loft);
+  cursor:pointer;
+}
+.check-done input:checked + span{color:var(--loft);font-weight:600;}
+
+/* "Fechar mês" button */
+.btn-close-month{
+  width:100%;
+  background:linear-gradient(135deg, var(--brand-dk) 0%, #6B3FE3 100%);
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  padding:13px;
+  font-family:var(--font-display);
+  font-size:11.5px;
+  font-weight:800;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  cursor:pointer;
+  margin-bottom:10px;
+  box-shadow:0 0 14px rgba(107,63,227,.35);
+  transition:all .15s;
+}
+.btn-close-month:hover{filter:brightness(1.1);}
+.btn-close-month:active{transform:scale(.98);}
+
 /* PERIOD FILTER (Gastos tab) */
 .period-filter{
   display:flex;
@@ -1851,14 +2007,29 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 </div>
 
 <div class="tabs" id="tabs">
-  <div class="tab on" data-tab="all">Todas</div>
+  <div class="tab on" data-tab="hoje">🌅 Hoje</div>
+  <div class="tab" data-tab="all">Todas</div>
   <div class="tab" data-tab="loft">🏠 Loftcare</div>
   <div class="tab" data-tab="alug">🔑 aluGO</div>
   <div class="tab" data-tab="stay">🏠 Imóvel</div>
   <div class="tab" data-tab="gastos">💸 Gastos</div>
 </div>
 
-<div class="panel on" id="panel-all">
+<div class="panel on" id="panel-hoje">
+  <div class="hoje-header">
+    <div class="hoje-date" id="hoje-date">—</div>
+    <div class="hoje-summary" id="hoje-summary">—</div>
+  </div>
+  <div id="hoje-overdue-section"></div>
+  <div id="hoje-today-section"></div>
+  <div id="hoje-done-section"></div>
+  <div id="hoje-empty" style="display:none;text-align:center;color:var(--dim);padding:40px 20px;">
+    <div style="font-size:48px;margin-bottom:12px;opacity:.5;">☀️</div>
+    <div style="font-size:14px;line-height:1.6;">Nada pra fazer hoje, nada atrasado.<br>Bom dia, Pedro! 🌴</div>
+  </div>
+</div>
+
+<div class="panel" id="panel-all">
   <div class="prog">
     <div class="prog-top"><span>Progresso geral</span><span id="pt-all">0/0</span></div>
     <div class="prog-bar"><div class="prog-fill pf-all" id="pb-all"></div></div>
@@ -1900,6 +2071,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 </div>
 <div class="panel" id="panel-gastos">
   <div id="gs-orphan-warn"></div>
+  <button class="btn-close-month" id="btn-fechar-mes" style="display:none;">📅 Fechar mês passado (preparar exportação)</button>
   <div class="period-filter" id="period-filter">
     <button class="pf-btn active" data-period="all">Todos</button>
     <button class="pf-btn" data-period="month">Este mês</button>
@@ -1933,8 +2105,10 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   <div class="modal">
     <div class="modal-handle"></div>
     <h2>Nova Tarefa</h2>
+    <button type="button" class="btn-template-trigger" id="btn-open-templates">📋 Usar template rápido</button>
     <label class="flabel">Título *</label>
     <input class="finput" id="f-title" type="text" placeholder="Ex: Instalar fechadura…">
+    <div id="cat-suggestion" style="display:none;"></div>
     <label class="flabel">Imóvel / Local</label>
     <select class="finput" id="f-local-sel" onchange="onLocalSelectChange('f')">
       <option value="">— Sem local —</option>
@@ -1988,10 +2162,27 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     </select>
     <label class="flabel">Prazo final (opcional)</label>
     <input class="finput" id="f-prazo" type="date">
+    <label class="check-done" id="f-done-row">
+      <input type="checkbox" id="f-done">
+      <span>✅ Já concluída (lançando histórico)</span>
+    </label>
     <div class="err-msg" id="err-new"></div>
     <div class="btn-row">
       <button class="btn-s" id="btn-cancel-new">Cancelar</button>
       <button class="btn-p" id="btn-save-task">Criar Tarefa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: TEMPLATES -->
+<div class="overlay" id="ov-tpl">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-handle"></div>
+    <h2>📋 Templates rápidos</h2>
+    <p style="font-size:12.5px;color:var(--dim);margin-bottom:12px;line-height:1.5;">Toca pra preencher os campos automaticamente. Você ainda pode ajustar antes de criar.</p>
+    <div id="tpl-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:60vh;overflow-y:auto;"></div>
+    <div class="btn-row">
+      <button class="btn-s" id="btn-cancel-tpl">Cancelar</button>
     </div>
   </div>
 </div>
@@ -2289,12 +2480,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <input type="file" id="restore-file" accept=".json">
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v14</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v15</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v14';
+var APP_VERSION = 'v15';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -2932,6 +3123,8 @@ function openNew(){
   document.getElementById('f-obs').value   = '';
   document.getElementById('f-custo').value = '';
   document.getElementById('f-categoria').value = '';
+  document.getElementById('f-done').checked = false;
+  document.getElementById('cat-suggestion').style.display = 'none';
   document.getElementById('f-prazo').value = '';
   document.getElementById('err-new').style.display = 'none';
   document.getElementById('err-new').style.background = '';
@@ -2992,7 +3185,8 @@ document.getElementById('btn-save-task').addEventListener('click', function(){
     pessoa: document.getElementById('f-pessoa').value,
     prazo:  document.getElementById('f-prazo').value,
     subtasks: tempSubtasksF.slice(),
-    categoria: document.getElementById('f-categoria').value || ''
+    categoria: document.getElementById('f-categoria').value || '',
+    done: document.getElementById('f-done').checked
   };
   var custoVal = parseFloat(document.getElementById('f-custo').value);
   if(isNaN(custoVal)) custoVal = 0;
@@ -3009,6 +3203,7 @@ document.getElementById('btn-save-task').addEventListener('click', function(){
   }
 
   // SINGLE TASK (original path)
+  var doneFlag = document.getElementById('f-done').checked;
   var t = {
     id:    n(),
     cc:    pickCC,
@@ -3017,7 +3212,7 @@ document.getElementById('btn-save-task').addEventListener('click', function(){
     obs:    taskData.obs,
     pessoa: taskData.pessoa,
     prazo:  taskData.prazo,
-    done:  false,
+    done:  doneFlag,
     ts:    Date.now(),
     subtasks: taskData.subtasks
   };
@@ -3466,7 +3661,7 @@ function createMultiTasks(data, costMode){
       obs:   task.obs,
       pessoa: task.pessoa,
       prazo:  task.prazo,
-      done:   false,
+      done:   task.done || false,
       ts:     Date.now() + i, // slight offset to keep order
       subtasks: task.subtasks ? task.subtasks.slice() : []
     };
@@ -3499,31 +3694,71 @@ function shareTask(id){
   for(var i=0;i<tasks.length;i++) if(tasks[i].id===id) t=tasks[i];
   if(!t) return;
   var lines = [];
-  lines.push('📋 ' + t.title);
-  var cc = CC[t.cc];
-  if(cc) lines.push('🏷 ' + cc.lbl);
+  // Header: status + título
+  var statusEmoji = t.done ? '✅' : '⏳';
+  lines.push(statusEmoji + ' *' + t.title + '*');
+  lines.push('━━━━━━━━━━━━━━━');
+  // Local + prédio
   if(t.local){
     var info = getLocalInfo(t.local);
+    var imovelInfo = getImovelInfo(t.local);
     var locLabel = info.predio ? info.predio+' · '+t.local : t.local;
-    lines.push('📍 ' + locLabel);
+    lines.push('🏠 ' + locLabel);
+    if(imovelInfo.code) lines.push('🏷 Código: ' + imovelInfo.code);
   }
+  // CC
+  var cc = CC[t.cc];
+  if(cc) lines.push('📌 ' + cc.lbl);
+  // Pessoa
   if(t.pessoa) lines.push('👤 ' + t.pessoa);
+  // Prazo
   if(t.prazo){
     var d = new Date(t.prazo+'T12:00:00');
     var dStr = d.toLocaleDateString('pt-BR');
-    lines.push('📅 Prazo: ' + dStr);
+    var todayStr = new Date().toISOString().slice(0,10);
+    var prazoEmoji = '📅';
+    if(!t.done && t.prazo < todayStr) prazoEmoji = '🚨';
+    else if(!t.done && t.prazo === todayStr) prazoEmoji = '🌅';
+    lines.push(prazoEmoji + ' Prazo: ' + dStr);
   }
-  if(t.obs) lines.push('\n' + t.obs);
+  // Custo total
+  var total = 0;
+  var gastosT = [];
+  for(var g=0;g<gastos.length;g++) if(gastos[g].taskId===t.id){
+    total+=gastos[g].valor;
+    gastosT.push(gastos[g]);
+  }
+  if(total>0){
+    lines.push('💸 Custo: ' + brl(total));
+  }
+  // Observação
+  if(t.obs){
+    lines.push('');
+    lines.push('📝 *Detalhes:*');
+    lines.push(t.obs);
+  }
+  // Subtasks
   if(t.subtasks && t.subtasks.length){
     lines.push('');
+    lines.push('✓ *Checklist:*');
     for(var s=0;s<t.subtasks.length;s++){
       var st = t.subtasks[s];
       lines.push((st.done?'☑':'☐') + ' ' + st.text);
     }
   }
-  var total = 0;
-  for(var g=0;g<gastos.length;g++) if(gastos[g].taskId===t.id) total+=gastos[g].valor;
-  if(total>0) lines.push('\n💸 Total: ' + brl(total));
+  // Breakdown de gastos se múltiplos
+  if(gastosT.length > 1){
+    lines.push('');
+    lines.push('💰 *Gastos:*');
+    for(var g=0;g<gastosT.length;g++){
+      var gg = gastosT[g];
+      var cat = gg.categoria ? ' · ' + (CATEGORIA_LABELS[gg.categoria] || gg.categoria) : '';
+      lines.push('• ' + gg.title + cat + ' — ' + brl(gg.valor));
+    }
+  }
+  lines.push('');
+  lines.push('━━━━━━━━━━━━━━━');
+  lines.push('_Hub Pedro · gerado em ' + new Date().toLocaleString('pt-BR',{day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}) + '_');
 
   var text = lines.join('\n');
   if(navigator.share){
@@ -4777,6 +5012,7 @@ function renderGastos(){
     if(inPeriod(gastos[i].ts)) total+=gastos[i].valor;
   }
   document.getElementById('gs-total').textContent = brl(total);
+  updateFecharMesVisibility();
 
   // Orphan warning — gastos whose task was deleted
   var orphans = countOrphanGastos();
@@ -4892,6 +5128,216 @@ function renderGastos(){
   document.getElementById('gs-exported-section').innerHTML = expSecHtml;
 }
 
+/* === V15: TEMPLATES, SUGESTÃO, HOJE, FECHAR MÊS === */
+
+// Templates fixos (baseados nos gastos recorrentes do Pedro)
+var TASK_TEMPLATES = [
+  // Operacional
+  {nome:'Limpeza pós-saída',         cc:'loft', custo:65,   categoria:'limpeza',     dica:'Loftcare · R$65'},
+  {nome:'Vistoria de entrada',       cc:'loft', custo:0,    categoria:'',            dica:'Loftcare'},
+  {nome:'Vistoria de saída',         cc:'loft', custo:0,    categoria:'',            dica:'Loftcare'},
+  {nome:'Limpeza de ar-condicionado', cc:'stay', custo:250, categoria:'limpeza',     dica:'Imóvel · R$250'},
+  {nome:'Limpeza de sofá',           cc:'stay', custo:250,  categoria:'limpeza',     dica:'Imóvel · R$250'},
+  {nome:'Dedetização',               cc:'stay', custo:200,  categoria:'manutencao',  dica:'Imóvel · R$200'},
+  {nome:'Compra de amenities',       cc:'stay', custo:0,    categoria:'amenities',   dica:'Imóvel'},
+  {nome:'Compra de enxoval',         cc:'stay', custo:0,    categoria:'enxoval',     dica:'Imóvel'},
+  // Recorrentes (contas)
+  {nome:'Conta de energia',          cc:'stay', custo:0,    categoria:'energia',     dica:'Imóvel · mensal'},
+  {nome:'Conta de água',             cc:'stay', custo:0,    categoria:'agua',        dica:'Imóvel · mensal'},
+  {nome:'Conta de gás',              cc:'stay', custo:0,    categoria:'gas',         dica:'Imóvel · mensal'},
+  {nome:'Condomínio',                cc:'stay', custo:0,    categoria:'condominio',  dica:'Imóvel · mensal'},
+  {nome:'Internet',                  cc:'stay', custo:0,    categoria:'internet',    dica:'Imóvel · mensal'},
+  {nome:'IPTU',                      cc:'stay', custo:0,    categoria:'iptu',        dica:'Imóvel · anual'}
+];
+
+function openTemplates(){
+  var el = document.getElementById('tpl-list');
+  var html = '';
+  for(var i=0;i<TASK_TEMPLATES.length;i++){
+    var t = TASK_TEMPLATES[i];
+    html += '<button class="tpl-item" data-idx="'+i+'">'+
+      '<div class="tpl-name">'+x(t.nome)+'</div>'+
+      '<div class="tpl-meta">'+x(t.dica)+'</div>'+
+    '</button>';
+  }
+  el.innerHTML = html;
+  document.getElementById('ov-tpl').classList.add('on');
+}
+function closeTemplates(){ document.getElementById('ov-tpl').classList.remove('on'); }
+document.getElementById('btn-open-templates').addEventListener('click', openTemplates);
+document.getElementById('btn-cancel-tpl').addEventListener('click', closeTemplates);
+document.getElementById('tpl-list').addEventListener('click', function(e){
+  var btn = e.target.closest('.tpl-item');
+  if(!btn) return;
+  var idx = parseInt(btn.dataset.idx);
+  var t = TASK_TEMPLATES[idx];
+  // Preenche os campos da nova tarefa
+  document.getElementById('f-title').value = t.nome;
+  if(t.custo > 0) document.getElementById('f-custo').value = t.custo;
+  if(t.categoria) document.getElementById('f-categoria').value = t.categoria;
+  // Seleciona CC
+  var ccOpts = document.querySelectorAll('#cc-grid .cc-opt');
+  for(var i=0;i<ccOpts.length;i++){
+    ccOpts[i].classList.remove('on');
+    if(ccOpts[i].dataset.cc === t.cc) ccOpts[i].classList.add('on');
+  }
+  pickCC = t.cc;
+  closeTemplates();
+  showToast('📋 Template aplicado');
+});
+
+// Sugestão automática de categoria por título
+var CATEGORIA_KEYWORDS = {
+  'limpeza':      ['limpeza','limpar','faxina','higienização','passadeira','sofá','tapete','ar-condicionado','ar condicionado','split'],
+  'manutencao':   ['dedetização','dedetizacao','manutenção','manutencao','reparo','consertar','arrumar','quebrou','vazamento','infiltração','pintura','pintar','elétrica','eletrica','encanamento','desentupir','troca de'],
+  'enxoval':      ['enxoval','toalha','lençol','lencol','fronha','colcha','edredom','protetor de'],
+  'amenities':    ['amenities','shampoo','sabonete','condicionador','hidratante','kit higiene'],
+  'mobilia':      ['móvel','movel','mobília','mobilia','sofá','cama','mesa','cadeira','armário','armario','rack','poltrona'],
+  'equipamentos': ['tv','televisão','televisao','geladeira','fogão','fogao','micro-ondas','microondas','airfryer','máquina','maquina','copo','taça','taca','talheres','panela','prato','quadro','equipamento','liquidificador','aspirador','secador'],
+  'energia':      ['conta de luz','conta de energia','energia elétrica','equatorial','enel','celg'],
+  'agua':         ['conta de água','conta de agua','saneago','água'],
+  'gas':          ['gás','gas','botijão','botijao'],
+  'condominio':   ['condomínio','condominio','taxa condominial'],
+  'iptu':         ['iptu','imposto predial'],
+  'internet':     ['internet','wi-fi','wifi','vivo','claro','tim','net','oi fibra','fibra']
+};
+
+function suggestCategoria(){
+  var title = document.getElementById('f-title').value.trim().toLowerCase();
+  var sug = document.getElementById('cat-suggestion');
+  var sel = document.getElementById('f-categoria');
+  if(!title || sel.value){ sug.style.display = 'none'; return; }
+  // Procura match em keywords
+  var match = null;
+  for(var cat in CATEGORIA_KEYWORDS){
+    var kws = CATEGORIA_KEYWORDS[cat];
+    for(var i=0;i<kws.length;i++){
+      if(title.indexOf(kws[i]) !== -1){ match = cat; break; }
+    }
+    if(match) break;
+  }
+  if(match){
+    var lbl = CATEGORIA_LABELS[match];
+    sug.innerHTML = '💡 Sugiro categoria: <strong>'+lbl+'</strong> <span class="dismiss" data-action="dismiss">✕</span>';
+    sug.dataset.cat = match;
+    sug.style.display = 'block';
+  } else {
+    sug.style.display = 'none';
+  }
+}
+document.getElementById('f-title').addEventListener('blur', suggestCategoria);
+document.getElementById('cat-suggestion').addEventListener('click', function(e){
+  if(e.target.classList.contains('dismiss')){
+    this.style.display = 'none';
+    return;
+  }
+  var cat = this.dataset.cat;
+  if(cat){
+    document.getElementById('f-categoria').value = cat;
+    this.style.display = 'none';
+    showToast('✓ Categoria aplicada');
+  }
+});
+
+// Aba "Hoje"
+function renderHoje(){
+  var todayYmd = new Date().toISOString().slice(0,10);
+  var overdue = [], todayList = [], doneToday = [];
+  for(var i=0;i<tasks.length;i++){
+    var t = tasks[i];
+    if(t.done){
+      // Mostra concluídas com timestamp de hoje
+      var taskYmd = new Date(t.ts).toISOString().slice(0,10);
+      if(taskYmd === todayYmd) doneToday.push(t);
+      continue;
+    }
+    if(!t.prazo){ continue; } // sem prazo não entra em Hoje
+    if(t.prazo < todayYmd) overdue.push(t);
+    else if(t.prazo === todayYmd) todayList.push(t);
+  }
+  // Header
+  var dateStr = new Date().toLocaleDateString('pt-BR',{weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('hoje-date').textContent = dateStr;
+  var sumParts = [];
+  if(overdue.length) sumParts.push(overdue.length + ' atrasada(s)');
+  if(todayList.length) sumParts.push(todayList.length + ' para hoje');
+  if(doneToday.length) sumParts.push(doneToday.length + ' concluída(s)');
+  document.getElementById('hoje-summary').textContent = sumParts.length ? sumParts.join(' · ') : 'Tudo em dia 🎉';
+
+  // Sections
+  var ov = document.getElementById('hoje-overdue-section');
+  var td = document.getElementById('hoje-today-section');
+  var dn = document.getElementById('hoje-done-section');
+  if(overdue.length){
+    ov.innerHTML = '<div class="hoje-section-header overdue"><span>⚠️ Atrasadas</span><span class="count">'+overdue.length+'</span></div>' +
+      overdue.map(cardHtml).join('');
+  } else ov.innerHTML = '';
+  if(todayList.length){
+    td.innerHTML = '<div class="hoje-section-header today"><span>🌅 Para hoje</span><span class="count">'+todayList.length+'</span></div>' +
+      todayList.map(cardHtml).join('');
+  } else td.innerHTML = '';
+  if(doneToday.length){
+    dn.innerHTML = '<div class="hoje-section-header done"><span>✅ Concluídas hoje</span><span class="count">'+doneToday.length+'</span></div>' +
+      doneToday.map(cardHtml).join('');
+  } else dn.innerHTML = '';
+
+  // Empty state
+  var totalCount = overdue.length + todayList.length + doneToday.length;
+  document.getElementById('hoje-empty').style.display = totalCount === 0 ? 'block' : 'none';
+}
+
+// Fechar mês passado
+function ymdMonthAgoRange(){
+  var now = new Date();
+  var first = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  var last  = new Date(now.getFullYear(), now.getMonth(), 0);
+  return {
+    from: first.toISOString().slice(0,10),
+    to: last.toISOString().slice(0,10),
+    label: first.toLocaleDateString('pt-BR',{month:'long', year:'numeric'})
+  };
+}
+document.getElementById('btn-fechar-mes').addEventListener('click', function(){
+  var range = ymdMonthAgoRange();
+  // Aplica filtro mês passado
+  currentPeriod = 'last';
+  var btns = document.querySelectorAll('.pf-btn');
+  for(var i=0;i<btns.length;i++){
+    btns[i].classList.remove('active');
+    if(btns[i].dataset.period === 'last') btns[i].classList.add('active');
+  }
+  document.getElementById('period-custom').style.display = 'none';
+  renderGastos();
+  // Abre o export modal automaticamente após render
+  setTimeout(function(){
+    openExport('__all__');
+    showToast('📅 Fechando ' + range.label);
+  }, 200);
+});
+
+// Mostra o botão "Fechar mês" só se houver gastos pra exportar do mês passado
+function updateFecharMesVisibility(){
+  var range = ymdMonthAgoRange();
+  var hasGastosMesPassado = false;
+  for(var i=0;i<gastos.length;i++){
+    if(gastos[i].exported) continue;
+    var ymd = new Date(gastos[i].ts).toISOString().slice(0,10);
+    if(ymd >= range.from && ymd <= range.to){
+      // Verifica se task está done
+      for(var j=0;j<tasks.length;j++){
+        if(tasks[j].id === gastos[i].taskId && tasks[j].done){
+          hasGastosMesPassado = true;
+          break;
+        }
+      }
+      if(hasGastosMesPassado) break;
+    }
+  }
+  var btn = document.getElementById('btn-fechar-mes');
+  btn.style.display = hasGastosMesPassado ? 'block' : 'none';
+  btn.textContent = '📅 Fechar ' + range.label + ' (' + range.from.slice(0,7) + ')';
+}
+
 function render(){
   var loft=[],alug=[],stay=[];
   for(var i=0;i<tasks.length;i++){
@@ -4909,6 +5355,7 @@ function render(){
   section('l-loft-p','l-loft-d',loftFiltered);
   section('l-alug-p','l-alug-d',alugFiltered);
   section('l-stay-p','l-stay-d',stayFiltered);
+  renderHoje();
   renderGastos();
 
   // Search info reflects active tab
