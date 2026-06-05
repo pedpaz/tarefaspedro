@@ -3462,12 +3462,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v19.1</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v19.2</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v19.1';
+var APP_VERSION = 'v19.2';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -7557,6 +7557,9 @@ function closeVoice(){
   document.getElementById('btn-voice-fab').classList.remove('listening');
 }
 
+var isListeningActive = false;
+var voiceInterim = '';
+
 function startListening(){
   var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SpeechRec){
@@ -7564,51 +7567,64 @@ function startListening(){
     closeVoice();
     return;
   }
-  voiceRecognition = new SpeechRec();
-  voiceRecognition.continuous = true;
-  voiceRecognition.interimResults = true;
-  voiceRecognition.lang = 'pt-BR';
-  voiceRecognition.maxAlternatives = 1;
-  document.getElementById('btn-voice-fab').classList.add('listening');
+  isListeningActive = true;
+  voiceInterim = '';
 
-  voiceRecognition.onresult = function(e){
-    var interim = '';
-    var final = '';
-    for(var i = e.resultIndex; i < e.results.length; i++){
-      var res = e.results[i];
-      if(res.isFinal) final += res[0].transcript + ' ';
-      else interim += res[0].transcript;
-    }
-    if(final) voiceTranscript += final;
-    var display = voiceTranscript + interim;
-    document.getElementById('voice-interim').textContent = display || '...';
-  };
+  function createAndStart(){
+    if(!isListeningActive) return;
+    var rec = new SpeechRec();
+    rec.continuous = false;      // sem continuous → sem duplicação
+    rec.interimResults = true;
+    rec.lang = 'pt-BR';
+    rec.maxAlternatives = 1;
+    voiceRecognition = rec;
+    document.getElementById('btn-voice-fab').classList.add('listening');
 
-  voiceRecognition.onerror = function(e){
-    if(e.error === 'no-speech') return; // ignorar silêncio
-    if(e.error === 'not-allowed'){
-      showToast('⚠️ Permita acesso ao microfone');
-      closeVoice();
-    }
-  };
-
-  voiceRecognition.onend = function(){
-    document.getElementById('btn-voice-fab').classList.remove('listening');
-    // Se foi parada automaticamente e ainda estamos em estado "listening", reinicia
-    if(document.getElementById('voice-state-listening').style.display !== 'none'){
-      if(voiceTranscript.trim().length > 3){
-        // Já tem texto suficiente — processa
-        processVoiceTranscript(voiceTranscript.trim());
+    rec.onresult = function(e){
+      var interim = '';
+      var finalTxt = '';
+      for(var i=0;i<e.results.length;i++){
+        if(e.results[i].isFinal) finalTxt += e.results[i][0].transcript + ' ';
+        else interim += e.results[i][0].transcript;
       }
-      // Se não tem texto, não faz nada (aguarda o usuário clicar em Parar)
-    }
-  };
+      voiceInterim = interim;
+      if(finalTxt.trim()){
+        // Só adiciona se o texto final não é repetição do que já temos
+        var trimmed = finalTxt.trim();
+        if(voiceTranscript.indexOf(trimmed) === -1){
+          voiceTranscript += (voiceTranscript ? ' ' : '') + trimmed;
+        }
+      }
+      var display = (voiceTranscript + ' ' + interim).trim();
+      document.getElementById('voice-interim').textContent = display || '...';
+    };
 
-  try { voiceRecognition.start(); }
-  catch(e){}
+    rec.onerror = function(e){
+      if(e.error === 'no-speech') return;
+      if(e.error === 'not-allowed'){
+        showToast('⚠️ Permita acesso ao microfone');
+        isListeningActive = false;
+        closeVoice();
+      }
+    };
+
+    rec.onend = function(){
+      document.getElementById('btn-voice-fab').classList.remove('listening');
+      if(!isListeningActive) return;
+      // Reinicia automaticamente enquanto ainda está no estado ouvindo
+      if(document.getElementById('voice-state-listening').style.display !== 'none'){
+        setTimeout(createAndStart, 150);
+      }
+    };
+
+    try { rec.start(); } catch(e){}
+  }
+
+  createAndStart();
 }
 
 function stopListening(){
+  isListeningActive = false;
   document.getElementById('btn-voice-fab').classList.remove('listening');
   if(voiceRecognition){
     try { voiceRecognition.stop(); } catch(e){}
@@ -7783,22 +7799,31 @@ function parseVoiceLocal(text){
   }
 
   // === TÍTULO ===
-  // Remove palavras instrumentais e reconstrói um título limpo
+  // Remove palavras instrumentais, valores, símbolos repetidos
   var clean = text
     .replace(/\b(?:registrar|criar|adicionar|novo|nova|anotar|colocar|cadastrar|lançar|lancei|lanca)\b/gi, '')
-    .replace(/\b(?:tarefa|gasto|custo|despesa|custo|pagamento|recibo)\b/gi, '')
-    .replace(/\b(?:de|do|da|no|na|pro|pra|com|em|para)\b/gi, ' ')
-    .replace(/\b(?:reais|conto|pilas|r\$)\b/gi, '')
+    .replace(/\b(?:tarefa|gasto|custo|despesa|pagamento|recibo)\b/gi, '')
+    .replace(/r\$\s*/gi, '')
+    .replace(/\b(?:reais|conto|pilas|real)\b/gi, '')
     .replace(/\d+(?:[.,]\d{2})?/g, '')
+    .replace(/\b(?:de|do|da|no|na|pro|pra|com|em|para|o|a|os|as|um|uma)\b/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
-  // Capitaliza primeira letra
-  if(clean.length > 2){
-    result.titulo = clean.charAt(0).toUpperCase() + clean.slice(1);
-  } else {
-    result.titulo = text.charAt(0).toUpperCase() + text.slice(1);
+  // Remove palavras repetidas consecutivamente (ex: "troca troca troca")
+  clean = clean.replace(/\b(\w+)\b(\s+\1\b)+/gi, '$1');
+
+  // Remove palavras isoladas de 1-2 chars que sobraram
+  clean = clean.replace(/\b\w{1,2}\b/g, ' ').replace(/\s+/g,' ').trim();
+
+  // Se ficou muito curto ou vazio, usa a última palavra significativa do texto original
+  if(clean.length < 3){
+    var words = text.split(/\s+/).filter(function(w){ return w.length > 3; });
+    clean = words[words.length - 1] || text;
   }
+
+  // Capitaliza
+  result.titulo = clean.charAt(0).toUpperCase() + clean.slice(1);
 
   return result;
 }
@@ -7897,14 +7922,14 @@ function renderVoiceResult(transcript, parsed){
 }
 
 document.getElementById('btn-voice-stop').addEventListener('click', function(){
-  var text = voiceTranscript.trim() ||
-             document.getElementById('voice-interim').textContent.trim();
-  if(text && text !== '...'){
-    voiceTranscript = text;
-    processVoiceTranscript(text);
-  } else {
-    showToast('Não ouvi nada ainda. Continue falando.');
-  }
+  // Usa o transcript acumulado, ou o interim atual se for mais longo/melhor
+  var fromFinal = voiceTranscript.trim();
+  var fromInterim = voiceInterim.trim();
+  // Prefere o interim se o transcript ficou vazio ou se o interim é mais completo
+  var text = fromFinal || fromInterim;
+  if(!text){ showToast('Não ouvi nada ainda. Continue falando.'); return; }
+  voiceTranscript = text;
+  processVoiceTranscript(text);
 });
 
 document.getElementById('btn-voice-cancel-listen').addEventListener('click', closeVoice);
