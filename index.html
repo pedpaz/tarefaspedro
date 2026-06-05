@@ -3450,13 +3450,24 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <div class="restore-drop" id="restore-drop" onclick="document.getElementById('restore-file').click()">Toque para selecionar o arquivo .json</div>
       <input type="file" id="restore-file" accept=".json">
     </div>
+    <div class="backup-section">
+      <h3>🤖 Voz com IA (opcional)</h3>
+      <p class="backup-info" style="margin-bottom:8px;">Sem API key, o comando de voz usa parser local (funciona bem pra casos simples). Com uma key da Anthropic, usa Claude Haiku pra interpretação mais precisa.</p>
+      <input class="finput" id="input-apikey" type="password" placeholder="sk-ant-..." autocomplete="off">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn-s" style="flex:1;" id="btn-save-apikey">Salvar key</button>
+        <button class="btn-s" style="flex:0 0 auto;color:#FF6B6B;border-color:rgba(255,107,107,.3);" id="btn-clear-apikey">Apagar</button>
+      </div>
+      <div id="apikey-status" style="font-size:11px;color:var(--dim);margin-top:6px;"></div>
+      <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
+    </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v19</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v19.1</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v19';
+var APP_VERSION = 'v19.1';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -5894,11 +5905,46 @@ function openBackup(){
   renderCategoriasList();
   populatePredioSelect('l-predio', '');
   document.getElementById('version-label').textContent = APP_VERSION;
+  // Mostra status da API key
+  var k = loadVoiceApiKey();
+  var inp = document.getElementById('input-apikey');
+  var status = document.getElementById('apikey-status');
+  if(k){
+    inp.value = '';
+    inp.placeholder = '•••• configurada ('+k.slice(0,8)+'...)';
+    status.textContent = '✅ API key salva — voz usa Claude Haiku';
+    status.style.color = 'var(--brand)';
+  } else {
+    inp.value = '';
+    inp.placeholder = 'sk-ant-...';
+    status.textContent = 'Sem key — voz usa parser local';
+    status.style.color = '';
+  }
   document.getElementById('ov-backup').classList.add('on');
 }
 function closeBackup(){ document.getElementById('ov-backup').classList.remove('on'); }
 document.getElementById('btn-backup').addEventListener('click', function(){ openBackup(); });
 document.getElementById('btn-close-backup').addEventListener('click', function(){ closeBackup(); });
+
+document.getElementById('btn-save-apikey').addEventListener('click', function(){
+  var val = document.getElementById('input-apikey').value.trim();
+  if(!val){ showToast('Cole a key antes de salvar'); return; }
+  if(!val.startsWith('sk-ant-')){ showToast('⚠️ Key inválida — deve começar com sk-ant-'); return; }
+  saveVoiceApiKey(val);
+  document.getElementById('input-apikey').value = '';
+  document.getElementById('input-apikey').placeholder = '•••• configurada ('+val.slice(0,8)+'...)';
+  document.getElementById('apikey-status').textContent = '✅ API key salva — voz usa Claude Haiku';
+  document.getElementById('apikey-status').style.color = 'var(--brand)';
+  showToast('✅ API key salva');
+});
+document.getElementById('btn-clear-apikey').addEventListener('click', function(){
+  saveVoiceApiKey('');
+  document.getElementById('input-apikey').value = '';
+  document.getElementById('input-apikey').placeholder = 'sk-ant-...';
+  document.getElementById('apikey-status').textContent = 'Sem key — voz usa parser local';
+  document.getElementById('apikey-status').style.color = '';
+  showToast('🗑 API key apagada');
+});
 document.getElementById('btn-do-backup').addEventListener('click', function(){
   var data = {version:APP_VERSION, exportedAt:new Date().toISOString(), tasks:tasks, gastos:gastos, pessoas:pessoas, locais:locais, predios:predios, categorias:categorias};
   var blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -7580,7 +7626,185 @@ function processVoiceTranscript(text){
   stopListening();
   voiceSetState('processing');
 
-  // Monta contexto de imóveis e categorias pra Claude
+  var apiKey = loadVoiceApiKey();
+  if(apiKey){
+    processVoiceWithClaude(text, apiKey);
+  } else {
+    // Parser local — sem API key
+    setTimeout(function(){
+      var parsed = parseVoiceLocal(text);
+      voiceParsed = parsed;
+      renderVoiceResult(text, parsed);
+      voiceSetState('result');
+    }, 300);
+  }
+}
+
+// Chave da API Anthropic (opcional)
+var AKV = 'pedro_apikey_v1';
+function loadVoiceApiKey(){
+  try { return localStorage.getItem(AKV) || ''; } catch(e){ return ''; }
+}
+function saveVoiceApiKey(k){
+  try { localStorage.setItem(AKV, k.trim()); } catch(e){}
+}
+
+// === PARSER LOCAL (sem API) ===
+function normalizeStr(s){
+  return s.toLowerCase()
+    .replace(/[àáâãä]/g,'a')
+    .replace(/[èéêë]/g,'e')
+    .replace(/[ìíîï]/g,'i')
+    .replace(/[òóôõö]/g,'o')
+    .replace(/[ùúûü]/g,'u')
+    .replace(/[ç]/g,'c')
+    .replace(/[ñ]/g,'n');
+}
+
+function parseVoiceLocal(text){
+  var result = {titulo:null, valor:null, local:null, categoria:null, prazo:null, obs:null, acao:'tarefa'};
+  var t = normalizeStr(text);
+
+  // === VALOR ===
+  // Números por extenso (PTBr)
+  var numWords = {
+    'zero':0,'um':1,'uma':1,'dois':2,'duas':2,'tres':3,'quatro':4,'cinco':5,
+    'seis':6,'sete':7,'oito':8,'nove':9,'dez':10,'onze':11,'doze':12,'treze':13,
+    'quatorze':14,'catorze':14,'quinze':15,'dezesseis':16,'dezessete':17,
+    'dezoito':18,'dezenove':19,'vinte':20,'trinta':30,'quarenta':40,
+    'cinquenta':50,'sessenta':60,'setenta':70,'oitenta':80,'noventa':90,
+    'cem':100,'cento':100,'duzentos':200,'duzentas':200,'trezentos':300,'trezentas':300,
+    'quatrocentos':400,'quatrocentas':400,'quinhentos':500,'quinhentas':500,
+    'seiscentos':600,'setecentos':700,'oitocentos':800,'novecentos':900,
+    'mil':1000
+  };
+
+  // Primeiro tenta número direto: "R$ 300", "300 reais", "300,00"
+  var rxNum = /(?:r\$\s*)?(\d{1,3}(?:\.\d{3})*(?:,\d{2})?|\d+(?:[.,]\d{2})?)\s*(?:reais|conto|pilas|real|,00)?/g;
+  var mNum;
+  var numCandidatos = [];
+  while((mNum = rxNum.exec(t)) !== null){
+    var clean = mNum[1].replace(/\./g,'').replace(',','.');
+    var v = parseFloat(clean);
+    if(!isNaN(v) && v > 0 && v < 100000) numCandidatos.push(v);
+  }
+
+  // Tenta por extenso: "trezentos reais", "duzentos e cinquenta"
+  var txExt = /\b((?:(?:zero|um|uma|dois|duas|tres|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|treze|quatorze|catorze|quinze|dezesseis|dezessete|dezoito|dezenove|vinte|trinta|quarenta|cinquenta|sessenta|setenta|oitenta|noventa|cem|cento|duzentos?|trezentos?|quatrocentos?|quinhentos?|seiscentos?|setecentos?|oitocentos?|novecentos?|mil)(?:\s+e\s+)?)+)\s*(?:reais|conto|pilas|real)?/g;
+  var mExt;
+  while((mExt = txExt.exec(t)) !== null){
+    var words = mExt[1].trim().split(/\s+(?:e\s+)?/);
+    var total = 0;
+    for(var w=0;w<words.length;w++){
+      var wv = numWords[words[w]];
+      if(wv !== undefined) total += wv;
+    }
+    if(total > 0) numCandidatos.push(total);
+  }
+
+  if(numCandidatos.length) result.valor = numCandidatos[0];
+  if(result.valor) result.acao = 'gasto';
+
+  // === PRAZO ===
+  var today = new Date();
+  if(/\bamanha\b/.test(t)){
+    var d = new Date(today); d.setDate(d.getDate()+1);
+    result.prazo = d.toISOString().slice(0,10);
+  } else if(/\bhoje\b/.test(t)){
+    result.prazo = today.toISOString().slice(0,10);
+  } else if(/semana\s+que\s+vem|proxima\s+semana/.test(t)){
+    var d = new Date(today); d.setDate(d.getDate()+7);
+    result.prazo = d.toISOString().slice(0,10);
+  } else {
+    var dias = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'];
+    for(var di=0;di<dias.length;di++){
+      if(t.indexOf(dias[di]) !== -1){
+        var target = di;
+        var cur = today.getDay();
+        var diff = target - cur;
+        if(diff <= 0) diff += 7;
+        var d = new Date(today); d.setDate(d.getDate()+diff);
+        result.prazo = d.toISOString().slice(0,10);
+        break;
+      }
+    }
+  }
+
+  // === IMÓVEL ===
+  // Tenta match por nome normalizado nos locais cadastrados
+  var bestLocal = null;
+  var bestScore = 0;
+  for(var i=0;i<locais.length;i++){
+    var nome = normalizeStr(locais[i].nome);
+    var parts = nome.split(/\s+/);
+    var score = 0;
+    for(var p=0;p<parts.length;p++){
+      if(parts[p].length > 2 && t.indexOf(parts[p]) !== -1) score += parts[p].length;
+    }
+    if(score > bestScore){ bestScore = score; bestLocal = locais[i].nome; }
+  }
+  // Também tenta por código/sigla via IMOVEL_INFO
+  if(!bestScore){
+    for(var k in IMOVEL_INFO){
+      var info = IMOVEL_INFO[k];
+      var sigla = normalizeStr(info.sigla || '');
+      var code = normalizeStr(info.code || '');
+      if((sigla && t.indexOf(sigla) !== -1) || (code && t.indexOf(code) !== -1)){
+        bestLocal = k; break;
+      }
+    }
+  }
+  if(bestLocal) result.local = bestLocal;
+
+  // === CATEGORIA ===
+  var catKw = [
+    {cat:'limpeza',      words:['limpe','limpeza','limpar','faxina','higieniza','lavar','vassoura','detergente','limpando']},
+    {cat:'manutencao',   words:['manutencao','reparo','reparar','consertar','conserto','troca','trocar','instala','instalar','reforma','reformar','pintura','pintar','vazamento','infiltracao','fechadura','torneira','chuveiro','eletrico','encanamento','vidro']},
+    {cat:'energia',      words:['luz','energia','eletrica','eletricidade','cemig','equatorial','enel','energisa','conta de luz','conta energia']},
+    {cat:'agua',         words:['agua','saneago','sabesp','brk','casan','copasa','conta agua','conta de agua']},
+    {cat:'gas',          words:['gas','compagas','comgas','botijao','botijao']},
+    {cat:'internet',     words:['internet','wifi','wi-fi','fibra','vivo','claro','oi','tim','net','algar','roteador']},
+    {cat:'condominio',   words:['condominio','taxa condominio','boleto condominio']},
+    {cat:'iptu',         words:['iptu','imposto','prefeitura']},
+    {cat:'enxoval',      words:['enxoval','toalha','toalhas','lencol','lencois','fronha','cobertor','edredom','colcha','roupa de cama']},
+    {cat:'amenities',    words:['amenities','shampoo','condicionador','sabonete','papel higienico','amenitie','produto hospede']},
+    {cat:'suprimentos',  words:['suprimento','produto limpeza','material','insumo','vassoura','rodo','pano','esponja','desinfetante','cloro','alvejante']},
+    {cat:'mobilia',      words:['mobilia','movel','mesa','cadeira','sofa','cama','guarda-roupa','armario','estante','rack']},
+    {cat:'equipamentos', words:['equipamento','ar condicionado','ar-condicionado','geladeira','fogao','microondas','maquina de lavar','secadora','televisao','tv','ventilador','aspirador']}
+  ];
+  for(var ci=0;ci<catKw.length;ci++){
+    for(var wi=0;wi<catKw[ci].words.length;wi++){
+      if(t.indexOf(catKw[ci].words[wi]) !== -1){
+        result.categoria = catKw[ci].cat;
+        break;
+      }
+    }
+    if(result.categoria) break;
+  }
+
+  // === TÍTULO ===
+  // Remove palavras instrumentais e reconstrói um título limpo
+  var clean = text
+    .replace(/\b(?:registrar|criar|adicionar|novo|nova|anotar|colocar|cadastrar|lançar|lancei|lanca)\b/gi, '')
+    .replace(/\b(?:tarefa|gasto|custo|despesa|custo|pagamento|recibo)\b/gi, '')
+    .replace(/\b(?:de|do|da|no|na|pro|pra|com|em|para)\b/gi, ' ')
+    .replace(/\b(?:reais|conto|pilas|r\$)\b/gi, '')
+    .replace(/\d+(?:[.,]\d{2})?/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Capitaliza primeira letra
+  if(clean.length > 2){
+    result.titulo = clean.charAt(0).toUpperCase() + clean.slice(1);
+  } else {
+    result.titulo = text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  return result;
+}
+
+// === CLAUDE API (opcional, se tiver key) ===
+function processVoiceWithClaude(text, apiKey){
   var imovelList = [];
   for(var k in IMOVEL_INFO){
     var info = IMOVEL_INFO[k];
@@ -7590,41 +7814,40 @@ function processVoiceTranscript(text){
   var all = getAllCategorias();
   for(var i=0;i<all.length;i++) catList.push(all[i].val + ': ' + all[i].lbl);
 
-  var systemPrompt = 'Voce e um assistente de gestao de imoveis. Extraia campos de um comando por voz em portugues para criar uma tarefa ou gasto.\n' +
-    'Responda SOMENTE com JSON valido, sem explicacoes nem markdown.\n' +
-    'Campos possiveis:\n' +
-    '{\n' +
-    '  "titulo": string (descricao curta da tarefa),\n' +
-    '  "valor": number ou null (valor em reais, apenas numero),\n' +
-    '  "local": string ou null (nome exato ou aproximado do imovel),\n' +
-    '  "categoria": string ou null (codigo da categoria),\n' +
-    '  "prazo": string ou null (data YYYY-MM-DD, interprete "amanha" "semana que vem" etc),\n' +
-    '  "obs": string ou null (observacao adicional),\n' +
-    '  "acao": "tarefa" ou "gasto" (se menciona valor e nao e tarefa especifica, prefira "gasto")\n' +
-    '}\n\n' +
-    'Imoveis disponiveis: ' + imovelList.join(', ') + '\n' +
+  var systemPrompt = 'Voce e um assistente de gestao de imoveis. Extraia campos de um comando por voz em portugues.\n' +
+    'Responda SOMENTE com JSON valido sem markdown.\n' +
+    '{"titulo":string,"valor":number|null,"local":string|null,"categoria":string|null,"prazo":"YYYY-MM-DD"|null,"obs":string|null,"acao":"tarefa"|"gasto"}\n\n' +
+    'Imoveis: ' + imovelList.join(', ') + '\n' +
     'Categorias: ' + catList.join(', ') + '\n' +
-    'Data atual: ' + new Date().toISOString().slice(0,10);
-
-  var userMsg = 'Comando por voz: "' + text + '"';
+    'Hoje: ' + new Date().toISOString().slice(0,10);
 
   fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 400,
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 300,
       system: systemPrompt,
-      messages: [{role: 'user', content: userMsg}]
+      messages: [{role:'user', content:'Comando: "' + text + '"'}]
     })
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
-    var raw = '';
-    if(data.content && data.content[0] && data.content[0].text){
-      raw = data.content[0].text.trim();
+    if(data.error){
+      // Key inválida ou erro API — cai pro parser local
+      showToast('API: ' + data.error.message + ' — usando parser local');
+      var parsed = parseVoiceLocal(text);
+      voiceParsed = parsed;
+      renderVoiceResult(text, parsed);
+      voiceSetState('result');
+      return;
     }
-    // Remove possível markdown
+    var raw = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text.trim() : '';
     raw = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
     try {
       var parsed = JSON.parse(raw);
@@ -7632,17 +7855,18 @@ function processVoiceTranscript(text){
       renderVoiceResult(text, parsed);
       voiceSetState('result');
     } catch(e){
-      document.getElementById('voice-err').textContent = 'Não consegui interpretar. Tente novamente.';
+      var parsed = parseVoiceLocal(text);
+      voiceParsed = parsed;
+      renderVoiceResult(text, parsed);
       voiceSetState('result');
-      document.getElementById('voice-transcript-shown').textContent = '"' + text + '"';
-      document.getElementById('voice-fields-card').innerHTML = '';
     }
   })
-  .catch(function(err){
+  .catch(function(){
+    // Sem internet ou erro — usa local
+    var parsed = parseVoiceLocal(text);
+    voiceParsed = parsed;
+    renderVoiceResult(text, parsed);
     voiceSetState('result');
-    document.getElementById('voice-err').textContent = 'Erro de conexão. Verifique sua internet.';
-    document.getElementById('voice-transcript-shown').textContent = '"' + text + '"';
-    document.getElementById('voice-fields-card').innerHTML = '';
   });
 }
 
