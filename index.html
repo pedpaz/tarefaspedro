@@ -1140,6 +1140,17 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   color:var(--dim);
   border-style:dashed;
 }
+.cat-group-label{
+  font-family:var(--font-display);
+  font-size:9.5px;
+  font-weight:700;
+  color:var(--brand);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin:8px 4px 2px;
+  opacity:.75;
+}
+.cat-group-label:first-child{margin-top:2px;}
 
 /* PERIOD FILTER (Gastos tab) */
 .period-filter{
@@ -1957,13 +1968,23 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     </div>
     <select class="finput" id="f-categoria" style="margin-top:8px;">
       <option value="">— Categoria do gasto (opcional) —</option>
-      <option value="limpeza">🧹 Limpeza</option>
-      <option value="manutencao">🔧 Manutenção</option>
-      <option value="energia">⚡ Energia</option>
-      <option value="agua">💧 Água</option>
-      <option value="condominio">🏢 Condomínio</option>
-      <option value="iptu">📄 IPTU</option>
-      <option value="outros">📦 Outros</option>
+      <optgroup label="Principais">
+        <option value="limpeza">🧹 Limpeza</option>
+        <option value="manutencao">🔧 Manutenção</option>
+        <option value="enxoval">🛏️ Enxoval</option>
+        <option value="amenities">🧴 Amenities</option>
+        <option value="mobilia">🪑 Mobília</option>
+        <option value="equipamentos">📦 Equipamentos</option>
+        <option value="outros">📌 Outros</option>
+      </optgroup>
+      <optgroup label="Recorrentes">
+        <option value="energia">⚡ Energia</option>
+        <option value="agua">💧 Água</option>
+        <option value="gas">🔥 Gás</option>
+        <option value="condominio">🏢 Condomínio</option>
+        <option value="iptu">📄 IPTU</option>
+        <option value="internet">📶 Internet</option>
+      </optgroup>
     </select>
     <label class="flabel">Prazo final (opcional)</label>
     <input class="finput" id="f-prazo" type="date">
@@ -2070,13 +2091,23 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <label class="flabel">Categoria</label>
     <select class="finput" id="f-cost-cat">
       <option value="">— Sem categoria —</option>
-      <option value="limpeza">🧹 Limpeza</option>
-      <option value="manutencao">🔧 Manutenção</option>
-      <option value="energia">⚡ Energia</option>
-      <option value="agua">💧 Água</option>
-      <option value="condominio">🏢 Condomínio</option>
-      <option value="iptu">📄 IPTU</option>
-      <option value="outros">📦 Outros</option>
+      <optgroup label="Principais">
+        <option value="limpeza">🧹 Limpeza</option>
+        <option value="manutencao">🔧 Manutenção</option>
+        <option value="enxoval">🛏️ Enxoval</option>
+        <option value="amenities">🧴 Amenities</option>
+        <option value="mobilia">🪑 Mobília</option>
+        <option value="equipamentos">📦 Equipamentos</option>
+        <option value="outros">📌 Outros</option>
+      </optgroup>
+      <optgroup label="Recorrentes">
+        <option value="energia">⚡ Energia</option>
+        <option value="agua">💧 Água</option>
+        <option value="gas">🔥 Gás</option>
+        <option value="condominio">🏢 Condomínio</option>
+        <option value="iptu">📄 IPTU</option>
+        <option value="internet">📶 Internet</option>
+      </optgroup>
     </select>
     <p class="cost-note">💡 Vinculado ao centro de custo da tarefa. Aparece na aba 💸 Gastos.</p>
     <div class="btn-row">
@@ -2258,12 +2289,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <input type="file" id="restore-file" accept=".json">
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v13</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v14</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v13';
+var APP_VERSION = 'v14';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -2284,15 +2315,21 @@ var CC_CSV = {
   pess:'pessoal', divs:'diversos'
 };
 
-/* Categorias do gasto (alinhado com o sistema externo) */
+/* Categorias do gasto (alinhado com o sistema externo - códigos exatos) */
 var CATEGORIAS = [
-  {val:'limpeza',     lbl:'Limpeza'},
-  {val:'manutencao',  lbl:'Manutenção'},
-  {val:'energia',     lbl:'Energia'},
-  {val:'agua',        lbl:'Água'},
-  {val:'condominio',  lbl:'Condomínio'},
-  {val:'iptu',        lbl:'IPTU'},
-  {val:'outros',      lbl:'Outros'}
+  {val:'limpeza',      lbl:'Limpeza',      grupo:'principais'},
+  {val:'manutencao',   lbl:'Manutenção',   grupo:'principais'},
+  {val:'enxoval',      lbl:'Enxoval',      grupo:'principais'},
+  {val:'amenities',    lbl:'Amenities',    grupo:'principais'},
+  {val:'mobilia',      lbl:'Mobília',      grupo:'principais'},
+  {val:'equipamentos', lbl:'Equipamentos', grupo:'principais'},
+  {val:'outros',       lbl:'Outros',       grupo:'principais'},
+  {val:'energia',      lbl:'Energia',      grupo:'recorrentes'},
+  {val:'agua',         lbl:'Água',         grupo:'recorrentes'},
+  {val:'gas',          lbl:'Gás',          grupo:'recorrentes'},
+  {val:'condominio',   lbl:'Condomínio',   grupo:'recorrentes'},
+  {val:'iptu',         lbl:'IPTU',         grupo:'recorrentes'},
+  {val:'internet',     lbl:'Internet',     grupo:'recorrentes'}
 ];
 
 /* Mapeamento oficial: imóvel curto → código sistema + prédio + tipo + proprietário */
@@ -3914,14 +3951,18 @@ function openCategoriaModal(gid){
   document.getElementById('cat-context').innerHTML =
     '<strong>' + x(g.title) + '</strong><br>' +
     (g.local?x(g.local)+' · ':'') + brl(g.valor);
-  // Build options
-  var opts = ['', 'limpeza', 'manutencao', 'energia', 'agua', 'condominio', 'iptu', 'outros'];
-  var html = '';
-  for(var j=0;j<opts.length;j++){
-    var val = opts[j];
-    var lbl = val === '' ? '🗑 Remover categoria' : CATEGORIA_LABELS[val];
-    var cls = 'cat-opt' + (val===''?' cat-opt-clear':'') + (val===(g.categoria||'') && val!==''?' active':'');
-    html += '<button class="'+cls+'" data-cat="'+val+'">'+lbl+'</button>';
+  // Build options agrupadas + opção de limpar no topo
+  var current = g.categoria || '';
+  var html = '<button class="cat-opt cat-opt-clear" data-cat="">🗑 Remover categoria</button>';
+  for(var i=0;i<CATEGORIA_GROUPS.length;i++){
+    var grp = CATEGORIA_GROUPS[i];
+    html += '<div class="cat-group-label">' + grp.label + '</div>';
+    for(var j=0;j<grp.items.length;j++){
+      var val = grp.items[j];
+      var lbl = CATEGORIA_LABELS[val];
+      var cls = 'cat-opt' + (val === current ? ' active' : '');
+      html += '<button class="'+cls+'" data-cat="'+val+'">'+lbl+'</button>';
+    }
   }
   document.getElementById('cat-options').innerHTML = html;
   document.getElementById('ov-cat').classList.add('on');
@@ -4633,15 +4674,33 @@ function bar(pbId, ptId, done, total){
 }
 
 var CATEGORIA_LABELS = {
-  '':           '🏷️ + categoria',
-  'limpeza':    '🧹 Limpeza',
-  'manutencao': '🔧 Manutenção',
-  'energia':    '⚡ Energia',
-  'agua':       '💧 Água',
-  'condominio': '🏢 Condomínio',
-  'iptu':       '📄 IPTU',
-  'outros':     '📦 Outros'
+  '':             '🏷️ + categoria',
+  'limpeza':      '🧹 Limpeza',
+  'manutencao':   '🔧 Manutenção',
+  'enxoval':      '🛏️ Enxoval',
+  'amenities':    '🧴 Amenities',
+  'mobilia':      '🪑 Mobília',
+  'equipamentos': '📦 Equipamentos',
+  'outros':       '📌 Outros',
+  'energia':      '⚡ Energia',
+  'agua':         '💧 Água',
+  'gas':          '🔥 Gás',
+  'condominio':   '🏢 Condomínio',
+  'iptu':         '📄 IPTU',
+  'internet':     '📶 Internet'
 };
+
+// Grupos pra exibição agrupada (modal de edição + dropdowns)
+var CATEGORIA_GROUPS = [
+  {
+    label: 'Principais',
+    items: ['limpeza','manutencao','enxoval','amenities','mobilia','equipamentos','outros']
+  },
+  {
+    label: 'Recorrentes',
+    items: ['energia','agua','gas','condominio','iptu','internet']
+  }
+];
 
 /* PERIOD FILTER — estado e helper */
 var currentPeriod = 'all'; // all | month | last | custom
