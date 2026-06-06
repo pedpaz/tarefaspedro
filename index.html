@@ -1811,6 +1811,34 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 }
 
 /* === FICHAS DOS IMÓVEIS === */
+.ficha-predio-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:18px 0 8px;
+  padding:0 2px 6px;
+  border-bottom:1px solid var(--line);
+}
+.ficha-predio-header:first-child{margin-top:0;}
+.ficha-predio-name{
+  font-family:var(--font-display);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--gold);
+}
+.ficha-predio-count{
+  font-family:var(--font-display);
+  font-size:10px;
+  font-weight:600;
+  color:var(--dim);
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:2px 8px;
+  font-variant-numeric:tabular-nums;
+}
 .ficha-back{
   background:none;
   border:none;
@@ -3665,12 +3693,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v21.3</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v21.4</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v21.3';
+var APP_VERSION = 'v21.4';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -8267,31 +8295,54 @@ function closeFichas(){ document.getElementById('ov-fichas').classList.remove('o
 function renderFichasList(filter){
   var el = document.getElementById('fichas-list');
   var f = normalizeStr(filter || '');
-  // Ordena imóveis por nome
-  var sorted = locais.slice().sort(function(a,b){
-    return a.nome.localeCompare(b.nome);
-  });
+
+  // Agrupa imóveis por prédio (aplicando filtro de busca)
+  var grupos = {};
+  var ordemPredios = [];
+  for(var i=0;i<locais.length;i++){
+    var nome = locais[i].nome;
+    if(f && normalizeStr(nome).indexOf(f) === -1){
+      // também tenta casar pelo nome do prédio
+      var pNorm = normalizeStr(locais[i].predio || '');
+      if(pNorm.indexOf(f) === -1) continue;
+    }
+    var predio = locais[i].predio || 'Sem prédio';
+    if(!grupos[predio]){ grupos[predio] = []; ordemPredios.push(predio); }
+    grupos[predio].push(locais[i]);
+  }
+  ordemPredios.sort(function(a,b){ return a.localeCompare(b); });
+
   var html = '';
   var count = 0;
-  for(var i=0;i<sorted.length;i++){
-    var nome = sorted[i].nome;
-    if(f && normalizeStr(nome).indexOf(f) === -1) continue;
-    count++;
-    var ficha = sorted[i].ficha || null;
-    var filled = fichaIsFilled(ficha);
-    var info = getImovelInfo(nome);
-    var meta = info.code ? info.code : (sorted[i].predio || '');
-    var badge = filled
-      ? '<span class="ficha-item-badge fib-full">✓ preenchida</span>'
-      : '<span class="ficha-item-badge fib-empty">vazia</span>';
-    html += '<div class="ficha-item" data-imovel="'+x(nome)+'">'+
-      '<div class="ficha-item-info" data-action="share">'+
-        '<div class="ficha-item-name">'+x(nome)+'</div>'+
-        (meta ? '<div class="ficha-item-meta">'+x(meta)+'</div>' : '')+
-      '</div>'+
-      badge+
-      '<button class="ficha-edit-btn" data-action="edit" title="Editar ficha">✏️</button>'+
+  for(var g=0;g<ordemPredios.length;g++){
+    var predio = ordemPredios[g];
+    var items = grupos[predio].slice().sort(function(a,b){ return a.nome.localeCompare(b.nome); });
+    // Quantos têm ficha preenchida nesse prédio
+    var filled = 0;
+    for(var k=0;k<items.length;k++) if(fichaIsFilled(items[k].ficha)) filled++;
+    html += '<div class="ficha-predio-header">'+
+      '<span class="ficha-predio-name">'+x(predio)+'</span>'+
+      '<span class="ficha-predio-count">'+filled+'/'+items.length+'</span>'+
     '</div>';
+    for(var i=0;i<items.length;i++){
+      count++;
+      var nome = items[i].nome;
+      var ficha = items[i].ficha || null;
+      var isFilled = fichaIsFilled(ficha);
+      var info = getImovelInfo(nome);
+      var meta = info.code ? info.code : '';
+      var badge = isFilled
+        ? '<span class="ficha-item-badge fib-full">✓ preenchida</span>'
+        : '<span class="ficha-item-badge fib-empty">vazia</span>';
+      html += '<div class="ficha-item" data-imovel="'+x(nome)+'">'+
+        '<div class="ficha-item-info" data-action="share">'+
+          '<div class="ficha-item-name">'+x(nome)+'</div>'+
+          (meta ? '<div class="ficha-item-meta">'+x(meta)+'</div>' : '')+
+        '</div>'+
+        badge+
+        '<button class="ficha-edit-btn" data-action="edit" title="Editar ficha">✏️</button>'+
+      '</div>';
+    }
   }
   if(!count){
     html = '<div style="text-align:center;color:var(--dim);padding:30px 10px;font-size:13px;">'+
