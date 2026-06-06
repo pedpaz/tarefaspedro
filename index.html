@@ -1810,6 +1810,125 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   line-height:1.5;
 }
 
+/* === FICHAS DOS IMÓVEIS === */
+.ficha-back{
+  background:none;
+  border:none;
+  color:var(--brand);
+  font-family:var(--font-display);
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.04em;
+  cursor:pointer;
+  padding:0;
+  margin-bottom:10px;
+  text-transform:uppercase;
+}
+.ficha-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:11px;
+  padding:13px 14px;
+  margin-bottom:7px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.ficha-item:hover{border-color:var(--brand);background:var(--paper-2);}
+.ficha-item:active{transform:scale(.99);}
+.ficha-item-info{flex:1;min-width:0;}
+.ficha-item-name{
+  font-family:var(--font-display);
+  font-size:14px;
+  font-weight:600;
+  color:var(--ink);
+  letter-spacing:.01em;
+}
+.ficha-item-meta{
+  font-size:10.5px;
+  color:var(--dim);
+  margin-top:2px;
+}
+.ficha-item-badge{
+  font-size:9px;
+  font-weight:700;
+  font-family:var(--font-display);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  padding:3px 8px;
+  border-radius:7px;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.fib-full{background:var(--stay-tint);color:var(--stay);border:1px solid rgba(0,219,168,.25);}
+.fib-empty{background:transparent;color:var(--dim);border:1px dashed var(--line);}
+.ficha-item-arrow{color:var(--dim);font-size:18px;flex-shrink:0;}
+
+/* Ficha view fields */
+.ficha-field{
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:13px 14px;
+  margin-bottom:9px;
+}
+.ficha-field-label{
+  font-family:var(--font-display);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin-bottom:6px;
+}
+.ficha-field-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.ficha-field-value{
+  font-size:15px;
+  color:var(--ink);
+  font-weight:500;
+  flex:1;
+  min-width:0;
+  word-break:break-word;
+}
+.ficha-field-value.mono{
+  font-family:ui-monospace,'SF Mono',Menlo,monospace;
+  letter-spacing:.02em;
+}
+.ficha-field-empty{
+  color:var(--dim);
+  font-style:italic;
+  font-weight:400;
+  font-size:13px;
+}
+.ficha-copy-btn{
+  background:var(--brand-tint);
+  border:1px solid var(--brand-dk);
+  color:var(--brand-lt);
+  border-radius:8px;
+  padding:7px 12px;
+  font-family:var(--font-display);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:all .15s;
+}
+.ficha-copy-btn:hover{background:var(--brand);color:#fff;}
+.ficha-copy-btn:active{transform:scale(.94);}
+.ficha-copy-btn.copied{background:var(--stay);color:#04060D;border-color:var(--stay);}
+.ficha-subfield{margin-top:10px;}
+.ficha-subfield:first-child{margin-top:0;}
+
 /* === OCR DE BOLETO === */
 .btn-ocr{
   width:100%;
@@ -2744,9 +2863,10 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <h1>Olá, Pedro 👋</h1>
   </div>
   <div id="pendingBadge">0 pendentes</div>
-  <button id="btn-search-open" title="Buscar tarefas" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:4px 6px;margin-left:2px;">🔍</button>
-  <button id="btn-wa-open" title="Enviar via WhatsApp" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:4px 6px;margin-left:2px;">📲</button>
-  <button id="btn-backup" title="Backup" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:4px 6px;margin-left:2px;">⚙️</button>
+  <button id="btn-fichas-open" title="Fichas dos imóveis" style="background:none;border:none;color:#888;font-size:19px;cursor:pointer;padding:4px 5px;margin-left:1px;">🔑</button>
+  <button id="btn-search-open" title="Buscar tarefas" style="background:none;border:none;color:#888;font-size:19px;cursor:pointer;padding:4px 5px;margin-left:1px;">🔍</button>
+  <button id="btn-wa-open" title="Enviar via WhatsApp" style="background:none;border:none;color:#888;font-size:19px;cursor:pointer;padding:4px 5px;margin-left:1px;">📲</button>
+  <button id="btn-backup" title="Backup" style="background:none;border:none;color:#888;font-size:19px;cursor:pointer;padding:4px 5px;margin-left:1px;">⚙️</button>
 </header>
 
 <div class="search-bar" id="search-bar">
@@ -2920,6 +3040,56 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <div class="btn-row">
         <button class="btn-s" id="btn-voice-redo">🎤 Repetir</button>
         <button class="btn-p" id="btn-voice-create">→ Criar tarefa</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: FICHAS DOS IMÓVEIS -->
+<div class="overlay" id="ov-fichas">
+  <div class="modal" style="max-width:96vw;max-height:90vh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+
+    <!-- ESTADO: LISTA -->
+    <div id="fichas-list-state">
+      <h2>🔑 Fichas dos imóveis</h2>
+      <input class="finput" id="fichas-search" type="text" placeholder="🔍 Buscar imóvel..." style="margin-bottom:12px;" autocomplete="off">
+      <div id="fichas-list"></div>
+      <div class="btn-row">
+        <button class="btn-s" id="btn-close-fichas">Fechar</button>
+      </div>
+    </div>
+
+    <!-- ESTADO: VISUALIZAÇÃO -->
+    <div id="ficha-view-state" style="display:none;">
+      <button class="ficha-back" id="ficha-back-view">‹ Voltar</button>
+      <h2 id="ficha-view-title">Imóvel</h2>
+      <div id="ficha-view-body"></div>
+      <div class="btn-row" style="flex-wrap:wrap;gap:8px;">
+        <button class="btn-s" id="btn-ficha-share">📤 Compartilhar</button>
+        <button class="btn-p" id="btn-ficha-edit">✏️ Editar ficha</button>
+      </div>
+    </div>
+
+    <!-- ESTADO: EDIÇÃO -->
+    <div id="ficha-edit-state" style="display:none;">
+      <button class="ficha-back" id="ficha-back-edit">‹ Voltar</button>
+      <h2 id="ficha-edit-title">Editar ficha</h2>
+
+      <label class="flabel">📶 WiFi — Rede</label>
+      <input class="finput" id="ficha-wifi-rede" type="text" placeholder="Nome da rede" autocomplete="off">
+      <label class="flabel">📶 WiFi — Senha</label>
+      <input class="finput" id="ficha-wifi-senha" type="text" placeholder="Senha do WiFi" autocomplete="off">
+
+      <label class="flabel">🔐 Fechadura / Chave</label>
+      <input class="finput" id="ficha-fechadura" type="text" placeholder="Ex: Senha 4729 ou chave na portaria" autocomplete="off">
+
+      <label class="flabel">🚗 Garagem / Andar</label>
+      <input class="finput" id="ficha-garagem" type="text" placeholder="Ex: Vaga 45, 11º andar" autocomplete="off">
+
+      <div class="btn-row">
+        <button class="btn-s" id="btn-ficha-cancel">Cancelar</button>
+        <button class="btn-p" id="btn-ficha-save">Salvar ficha</button>
       </div>
     </div>
   </div>
@@ -3477,12 +3647,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v20</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v21</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v20';
+var APP_VERSION = 'v21';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -8003,6 +8173,205 @@ document.getElementById('btn-voice-create').addEventListener('click', function()
 document.getElementById('btn-voice-fab').addEventListener('click', openVoice);
 document.getElementById('ov-voice').addEventListener('click', function(e){
   if(e.target.id === 'ov-voice') closeVoice();
+});
+
+// === V21: FICHAS DOS IMÓVEIS ===
+var fichaCurrentImovel = null; // nome do imóvel sendo visto/editado
+
+function getFicha(nomeImovel){
+  for(var i=0;i<locais.length;i++){
+    if(locais[i].nome === nomeImovel) return locais[i].ficha || null;
+  }
+  return null;
+}
+function fichaIsFilled(f){
+  if(!f) return false;
+  return !!(f.wifiRede || f.wifiSenha || f.fechadura || f.garagem);
+}
+
+function fichaShowState(state){
+  document.getElementById('fichas-list-state').style.display = state==='list' ? 'block' : 'none';
+  document.getElementById('ficha-view-state').style.display = state==='view' ? 'block' : 'none';
+  document.getElementById('ficha-edit-state').style.display = state==='edit' ? 'block' : 'none';
+}
+
+function openFichas(){
+  document.getElementById('ov-fichas').classList.add('on');
+  document.getElementById('fichas-search').value = '';
+  fichaShowState('list');
+  renderFichasList('');
+}
+function closeFichas(){ document.getElementById('ov-fichas').classList.remove('on'); }
+
+function renderFichasList(filter){
+  var el = document.getElementById('fichas-list');
+  var f = normalizeStr(filter || '');
+  // Ordena imóveis por nome
+  var sorted = locais.slice().sort(function(a,b){
+    return a.nome.localeCompare(b.nome);
+  });
+  var html = '';
+  var count = 0;
+  for(var i=0;i<sorted.length;i++){
+    var nome = sorted[i].nome;
+    if(f && normalizeStr(nome).indexOf(f) === -1) continue;
+    count++;
+    var ficha = sorted[i].ficha || null;
+    var filled = fichaIsFilled(ficha);
+    var info = getImovelInfo(nome);
+    var meta = info.code ? info.code : (sorted[i].predio || '');
+    var badge = filled
+      ? '<span class="ficha-item-badge fib-full">✓ preenchida</span>'
+      : '<span class="ficha-item-badge fib-empty">vazia</span>';
+    html += '<div class="ficha-item" data-imovel="'+x(nome)+'">'+
+      '<div class="ficha-item-info">'+
+        '<div class="ficha-item-name">'+x(nome)+'</div>'+
+        (meta ? '<div class="ficha-item-meta">'+x(meta)+'</div>' : '')+
+      '</div>'+
+      badge+
+      '<span class="ficha-item-arrow">›</span>'+
+    '</div>';
+  }
+  if(!count){
+    html = '<div style="text-align:center;color:var(--dim);padding:30px 10px;font-size:13px;">'+
+      (filter ? 'Nenhum imóvel encontrado' : 'Nenhum imóvel cadastrado ainda.<br>Adicione locais em ⚙️ Configurações.')+'</div>';
+  }
+  el.innerHTML = html;
+}
+
+function copyFieldRow(label, value, copyId){
+  if(!value){
+    return '<div class="ficha-field-row">'+
+      '<div class="ficha-field-value ficha-field-empty">não preenchido</div>'+
+    '</div>';
+  }
+  return '<div class="ficha-field-row">'+
+    '<div class="ficha-field-value mono">'+x(value)+'</div>'+
+    '<button class="ficha-copy-btn" data-copy="'+x(value)+'">copiar</button>'+
+  '</div>';
+}
+
+function openFichaView(nomeImovel){
+  fichaCurrentImovel = nomeImovel;
+  var ficha = getFicha(nomeImovel) || {};
+  document.getElementById('ficha-view-title').textContent = nomeImovel;
+  var html = '';
+  // WiFi (rede + senha)
+  html += '<div class="ficha-field">'+
+    '<div class="ficha-field-label">📶 WiFi</div>'+
+    '<div class="ficha-subfield">'+
+      '<div style="font-size:10px;color:var(--dim);margin-bottom:3px;">REDE</div>'+
+      copyFieldRow('Rede', ficha.wifiRede)+
+    '</div>'+
+    '<div class="ficha-subfield">'+
+      '<div style="font-size:10px;color:var(--dim);margin-bottom:3px;">SENHA</div>'+
+      copyFieldRow('Senha', ficha.wifiSenha)+
+    '</div>'+
+  '</div>';
+  // Fechadura
+  html += '<div class="ficha-field">'+
+    '<div class="ficha-field-label">🔐 Fechadura / Chave</div>'+
+    copyFieldRow('Fechadura', ficha.fechadura)+
+  '</div>';
+  // Garagem
+  html += '<div class="ficha-field">'+
+    '<div class="ficha-field-label">🚗 Garagem / Andar</div>'+
+    copyFieldRow('Garagem', ficha.garagem)+
+  '</div>';
+  document.getElementById('ficha-view-body').innerHTML = html;
+  fichaShowState('view');
+}
+
+function openFichaEdit(){
+  var ficha = getFicha(fichaCurrentImovel) || {};
+  document.getElementById('ficha-edit-title').textContent = 'Editar · ' + fichaCurrentImovel;
+  document.getElementById('ficha-wifi-rede').value = ficha.wifiRede || '';
+  document.getElementById('ficha-wifi-senha').value = ficha.wifiSenha || '';
+  document.getElementById('ficha-fechadura').value = ficha.fechadura || '';
+  document.getElementById('ficha-garagem').value = ficha.garagem || '';
+  fichaShowState('edit');
+}
+
+function saveFicha(){
+  var ficha = {
+    wifiRede: document.getElementById('ficha-wifi-rede').value.trim(),
+    wifiSenha: document.getElementById('ficha-wifi-senha').value.trim(),
+    fechadura: document.getElementById('ficha-fechadura').value.trim(),
+    garagem: document.getElementById('ficha-garagem').value.trim()
+  };
+  for(var i=0;i<locais.length;i++){
+    if(locais[i].nome === fichaCurrentImovel){
+      locais[i].ficha = ficha;
+      break;
+    }
+  }
+  savL();
+  showToast('🔑 Ficha salva');
+  openFichaView(fichaCurrentImovel);
+}
+
+function shareFicha(){
+  var ficha = getFicha(fichaCurrentImovel) || {};
+  var txt = '🏠 ' + fichaCurrentImovel + '\n\n';
+  if(ficha.wifiRede || ficha.wifiSenha){
+    txt += '📶 WiFi\n';
+    if(ficha.wifiRede) txt += '  Rede: ' + ficha.wifiRede + '\n';
+    if(ficha.wifiSenha) txt += '  Senha: ' + ficha.wifiSenha + '\n';
+    txt += '\n';
+  }
+  if(ficha.fechadura) txt += '🔐 Fechadura: ' + ficha.fechadura + '\n\n';
+  if(ficha.garagem) txt += '🚗 Garagem/Andar: ' + ficha.garagem + '\n\n';
+  txt += '— ' + fichaCurrentImovel;
+  if(navigator.share){
+    navigator.share({text:txt}).catch(function(){});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(txt);
+    showToast('📋 Ficha copiada');
+  }
+}
+
+// Handlers fichas
+document.getElementById('btn-fichas-open').addEventListener('click', openFichas);
+document.getElementById('btn-close-fichas').addEventListener('click', closeFichas);
+document.getElementById('ov-fichas').addEventListener('click', function(e){
+  if(e.target.id === 'ov-fichas') closeFichas();
+});
+document.getElementById('fichas-search').addEventListener('input', function(){
+  renderFichasList(this.value);
+});
+document.getElementById('fichas-list').addEventListener('click', function(e){
+  var item = e.target.closest('.ficha-item');
+  if(!item) return;
+  openFichaView(item.dataset.imovel);
+});
+document.getElementById('ficha-back-view').addEventListener('click', function(){
+  fichaShowState('list');
+  renderFichasList(document.getElementById('fichas-search').value);
+});
+document.getElementById('ficha-back-edit').addEventListener('click', function(){
+  openFichaView(fichaCurrentImovel);
+});
+document.getElementById('btn-ficha-edit').addEventListener('click', openFichaEdit);
+document.getElementById('btn-ficha-cancel').addEventListener('click', function(){
+  openFichaView(fichaCurrentImovel);
+});
+document.getElementById('btn-ficha-save').addEventListener('click', saveFicha);
+document.getElementById('btn-ficha-share').addEventListener('click', shareFicha);
+// Copiar valores na visualização
+document.getElementById('ficha-view-body').addEventListener('click', function(e){
+  var btn = e.target.closest('.ficha-copy-btn');
+  if(!btn) return;
+  var val = btn.dataset.copy;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(val).then(function(){
+      btn.classList.add('copied');
+      btn.textContent = '✓ copiado';
+      setTimeout(function(){
+        btn.classList.remove('copied');
+        btn.textContent = 'copiar';
+      }, 1500);
+    });
+  }
 });
 
 /* === V15: TEMPLATES, SUGESTÃO, HOJE, FECHAR MÊS === */
