@@ -1,0 +1,20 @@
+gabriela. — deploy no GitHub Pages (v13)
+========================================
+
+⚠️ Suba os ARQUIVOS soltos, NÃO a pasta. O index.html fica na RAIZ.
+
+Arquivos (8): index.html, app.js, service-worker.js, manifest.json,
+icon-192.png, icon-512.png, apple-touch-icon.png, favicon.svg
+
+ATUALIZAR PARA v3: mudaram app.js, index.html e service-worker.js.
+Suba esses 3 (sobrescrevem). Os ícones/manifest seguem iguais.
+
+Novidades v4 (sobre a v3):
+  - 📸 OCR: ao lançar gasto, "Ler de um boleto ou nota" -> tira foto,
+    o app preenche valor e vencimento sozinho.
+  Já tinha (v2): offline + auto-update, backup, gastos recorrentes, centro Casa.
+
+PASSOS (só na 1ª vez):
+1. Repo Public  2. Upload na raiz -> Commit
+3. Settings -> Pages -> Deploy from branch -> main / (root)
+4. URL: https://SEU_USUARIO.github.io/REPO/
