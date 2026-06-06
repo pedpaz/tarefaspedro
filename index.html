@@ -1866,6 +1866,20 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 .fib-full{background:var(--stay-tint);color:var(--stay);border:1px solid rgba(0,219,168,.25);}
 .fib-empty{background:transparent;color:var(--dim);border:1px dashed var(--line);}
 .ficha-item-arrow{color:var(--dim);font-size:18px;flex-shrink:0;}
+.ficha-edit-btn{
+  background:var(--surf-2);
+  border:1px solid var(--line);
+  color:var(--dim);
+  font-size:15px;
+  border-radius:9px;
+  padding:8px 10px;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:all .15s;
+}
+.ficha-edit-btn:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-tint);}
+.ficha-edit-btn:active{transform:scale(.92);}
+.ficha-item-info{cursor:pointer;}
 
 /* Ficha view fields */
 .ficha-field{
@@ -3053,7 +3067,8 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <!-- ESTADO: LISTA -->
     <div id="fichas-list-state">
       <h2>🔑 Fichas dos imóveis</h2>
-      <input class="finput" id="fichas-search" type="text" placeholder="🔍 Buscar imóvel..." style="margin-bottom:12px;" autocomplete="off">
+      <input class="finput" id="fichas-search" type="text" placeholder="🔍 Buscar imóvel..." style="margin-bottom:8px;" autocomplete="off">
+      <div style="font-size:11px;color:var(--dim);margin-bottom:12px;line-height:1.5;padding:0 2px;">📲 Toque no imóvel pra enviar os dados no WhatsApp · ✏️ pra editar</div>
       <div id="fichas-list"></div>
       <div class="btn-row">
         <button class="btn-s" id="btn-close-fichas">Fechar</button>
@@ -3086,6 +3101,9 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 
       <label class="flabel">🚗 Garagem / Andar</label>
       <input class="finput" id="ficha-garagem" type="text" placeholder="Ex: Vaga 45, 11º andar" autocomplete="off">
+
+      <label class="flabel">📋 Instruções específicas (opcional)</label>
+      <textarea class="finput" id="ficha-instrucoes" rows="3" placeholder="Ex: A porta da varanda emperra — empurre com firmeza. Ar-condicionado do quarto fica no modo eco." style="resize:vertical;min-height:70px;font-family:var(--font-body);"></textarea>
 
       <div class="btn-row">
         <button class="btn-s" id="btn-ficha-cancel">Cancelar</button>
@@ -3647,12 +3665,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v21</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v21.3</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v21';
+var APP_VERSION = 'v21.3';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -3830,6 +3848,48 @@ loadCategorias();
 ensureDefaultCategorias(); // garante que categorias system (incluindo Suprimentos) existam
 rebuildCategoriaCache();
 
+/* ═══ SEED DE FICHAS CONHECIDAS (dados extraídos dos guias) ═══ */
+var FICHA_SEED = [
+  {
+    match: ['2903', 'walk bueno', 'wb-2903', 'walkbueno'],
+    ficha: {
+      wifiRede: 'Macedo Paz',
+      wifiSenha: 'rotas1234',
+      fechadura: '2255 (segure até travar completamente)',
+      garagem: 'Vaga 106 (térreo)'
+    }
+  }
+];
+var FICHA_SEED_KEY = 'pedro_ficha_seed_v1';
+function seedFichas(){
+  try {
+    if(localStorage.getItem(FICHA_SEED_KEY)) return;
+  } catch(e){ return; }
+  var changed = false;
+  for(var s=0;s<FICHA_SEED.length;s++){
+    var seed = FICHA_SEED[s];
+    for(var i=0;i<locais.length;i++){
+      var nomeNorm = normalizeStr(locais[i].nome);
+      var matched = false;
+      for(var m=0;m<seed.match.length;m++){
+        if(nomeNorm.indexOf(normalizeStr(seed.match[m])) !== -1){ matched = true; break; }
+      }
+      var jaTem = locais[i].ficha && (locais[i].ficha.wifiRede || locais[i].ficha.wifiSenha || locais[i].ficha.fechadura || locais[i].ficha.garagem);
+      if(matched && !jaTem){
+        locais[i].ficha = {
+          wifiRede: seed.ficha.wifiRede,
+          wifiSenha: seed.ficha.wifiSenha,
+          fechadura: seed.ficha.fechadura,
+          garagem: seed.ficha.garagem
+        };
+        changed = true;
+      }
+    }
+  }
+  if(changed) savL();
+  try { localStorage.setItem(FICHA_SEED_KEY, '1'); } catch(e){}
+}
+
 /* ═══════════════════════════════════════════════════
    SMART MIGRATION — Portfólio oficial Pedro
    Runs ONCE: cadastra 10 prédios + 17 imóveis e
@@ -4006,6 +4066,7 @@ function runPortfolioMigration(){
   }
 }
 runPortfolioMigration();
+seedFichas(); // preenche fichas conhecidas (ex: Walk Bueno 2903) na 1ª vez
 
 var activeTab    = 'all';
 var activeDF     = 'all';
@@ -8186,7 +8247,7 @@ function getFicha(nomeImovel){
 }
 function fichaIsFilled(f){
   if(!f) return false;
-  return !!(f.wifiRede || f.wifiSenha || f.fechadura || f.garagem);
+  return !!(f.wifiRede || f.wifiSenha || f.fechadura || f.garagem || f.instrucoes);
 }
 
 function fichaShowState(state){
@@ -8224,12 +8285,12 @@ function renderFichasList(filter){
       ? '<span class="ficha-item-badge fib-full">✓ preenchida</span>'
       : '<span class="ficha-item-badge fib-empty">vazia</span>';
     html += '<div class="ficha-item" data-imovel="'+x(nome)+'">'+
-      '<div class="ficha-item-info">'+
+      '<div class="ficha-item-info" data-action="share">'+
         '<div class="ficha-item-name">'+x(nome)+'</div>'+
         (meta ? '<div class="ficha-item-meta">'+x(meta)+'</div>' : '')+
       '</div>'+
       badge+
-      '<span class="ficha-item-arrow">›</span>'+
+      '<button class="ficha-edit-btn" data-action="edit" title="Editar ficha">✏️</button>'+
     '</div>';
   }
   if(!count){
@@ -8289,6 +8350,7 @@ function openFichaEdit(){
   document.getElementById('ficha-wifi-senha').value = ficha.wifiSenha || '';
   document.getElementById('ficha-fechadura').value = ficha.fechadura || '';
   document.getElementById('ficha-garagem').value = ficha.garagem || '';
+  document.getElementById('ficha-instrucoes').value = ficha.instrucoes || '';
   fichaShowState('edit');
 }
 
@@ -8297,7 +8359,8 @@ function saveFicha(){
     wifiRede: document.getElementById('ficha-wifi-rede').value.trim(),
     wifiSenha: document.getElementById('ficha-wifi-senha').value.trim(),
     fechadura: document.getElementById('ficha-fechadura').value.trim(),
-    garagem: document.getElementById('ficha-garagem').value.trim()
+    garagem: document.getElementById('ficha-garagem').value.trim(),
+    instrucoes: document.getElementById('ficha-instrucoes').value.trim()
   };
   for(var i=0;i<locais.length;i++){
     if(locais[i].nome === fichaCurrentImovel){
@@ -8307,7 +8370,8 @@ function saveFicha(){
   }
   savL();
   showToast('🔑 Ficha salva');
-  openFichaView(fichaCurrentImovel);
+  fichaShowState('list');
+  renderFichasList(document.getElementById('fichas-search').value);
 }
 
 function shareFicha(){
@@ -8330,6 +8394,55 @@ function shareFicha(){
   }
 }
 
+// Monta o texto formatado pra WhatsApp
+function buildFichaText(nomeImovel){
+  var ficha = getFicha(nomeImovel) || {};
+  var txt = '🏠 *Dados do apartamento — ' + nomeImovel + '*\n';
+  txt += '━━━━━━━━━━━━━━━\n\n';
+  var hasData = false;
+  if(ficha.wifiRede || ficha.wifiSenha){
+    txt += '📶 *Wi-Fi*\n';
+    if(ficha.wifiRede)  txt += 'Rede: ' + ficha.wifiRede + '\n';
+    if(ficha.wifiSenha) txt += 'Senha: ' + ficha.wifiSenha + '\n';
+    txt += '\n';
+    hasData = true;
+  }
+  if(ficha.fechadura){
+    txt += '🔐 *Fechadura / Chave*\n' + ficha.fechadura + '\n\n';
+    hasData = true;
+  }
+  if(ficha.garagem){
+    txt += '🚗 *Garagem / Andar*\n' + ficha.garagem + '\n\n';
+    hasData = true;
+  }
+  if(ficha.instrucoes){
+    txt += '📋 *Instruções*\n' + ficha.instrucoes + '\n\n';
+    hasData = true;
+  }
+  txt += 'Em caso de dúvidas, estamos à disposição.\n\n';
+  txt += '*Equipe aluGO*';
+  return {text: txt, hasData: hasData};
+}
+
+// Toque no apartamento: copia tudo + abre WhatsApp direto
+function shareFichaDirect(nomeImovel){
+  var built = buildFichaText(nomeImovel);
+  if(!built.hasData){
+    // Ficha vazia → manda pra edição
+    fichaCurrentImovel = nomeImovel;
+    openFichaEdit();
+    showToast('Preencha a ficha primeiro');
+    return;
+  }
+  // Copia pro clipboard (backup)
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(built.text).catch(function(){});
+  }
+  // Abre WhatsApp com o texto pronto (escolhe contato no app)
+  var url = 'https://wa.me/?text=' + encodeURIComponent(built.text);
+  window.open(url, '_blank');
+}
+
 // Handlers fichas
 document.getElementById('btn-fichas-open').addEventListener('click', openFichas);
 document.getElementById('btn-close-fichas').addEventListener('click', closeFichas);
@@ -8342,18 +8455,29 @@ document.getElementById('fichas-search').addEventListener('input', function(){
 document.getElementById('fichas-list').addEventListener('click', function(e){
   var item = e.target.closest('.ficha-item');
   if(!item) return;
-  openFichaView(item.dataset.imovel);
+  var nome = item.dataset.imovel;
+  var editBtn = e.target.closest('[data-action="edit"]');
+  if(editBtn){
+    // Botão lápis → edita
+    fichaCurrentImovel = nome;
+    openFichaEdit();
+  } else {
+    // Toque no card → compartilha direto no WhatsApp
+    shareFichaDirect(nome);
+  }
 });
 document.getElementById('ficha-back-view').addEventListener('click', function(){
   fichaShowState('list');
   renderFichasList(document.getElementById('fichas-search').value);
 });
 document.getElementById('ficha-back-edit').addEventListener('click', function(){
-  openFichaView(fichaCurrentImovel);
+  fichaShowState('list');
+  renderFichasList(document.getElementById('fichas-search').value);
 });
 document.getElementById('btn-ficha-edit').addEventListener('click', openFichaEdit);
 document.getElementById('btn-ficha-cancel').addEventListener('click', function(){
-  openFichaView(fichaCurrentImovel);
+  fichaShowState('list');
+  renderFichasList(document.getElementById('fichas-search').value);
 });
 document.getElementById('btn-ficha-save').addEventListener('click', saveFicha);
 document.getElementById('btn-ficha-share').addEventListener('click', shareFicha);
