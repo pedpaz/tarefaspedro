@@ -1,7 +1,7 @@
 // Service Worker — Hub Pedro
 // v18: network-first pro HTML + cache de assets OCR (Tesseract)
-const CACHE = 'hub-pedro-v21-4';
-const VERSION = 'v21.4';
+const CACHE = 'hub-pedro-v22';
+const VERSION = 'v22';
 const FILES = [
   './',
   './index.html',
