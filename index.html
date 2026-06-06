@@ -3119,7 +3119,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <span class="mais-txt"><span class="mais-t">Configurações & Backup</span><span class="mais-d">Categorias, imóveis, salvar dados</span></span>
     <span class="mais-arrow">›</span>
   </button>
-  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v23</span></div>
+  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v24</span></div>
 </div>
 
 <div class="mass-toolbar" id="mass-toolbar">
@@ -3793,12 +3793,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v23</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v24</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v23';
+var APP_VERSION = 'v24';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -9049,6 +9049,60 @@ function render(){
 
 render();
 showArea('inicio'); // abre no painel Início
+
+/* ═══ ARRASTAR PRA BAIXO PARA FECHAR MODAIS ═══ */
+(function(){
+  var dModal = null, dOverlay = null, startY = 0, curDelta = 0, dragging = false, canClose = false;
+
+  function dismiss(ov){
+    if(!ov) return;
+    if(ov.id === 'ov-voice' && typeof closeVoice === 'function') closeVoice();
+    else ov.classList.remove('on');
+  }
+
+  document.addEventListener('touchstart', function(e){
+    var ov = e.target.closest('.overlay.on');
+    if(!ov){ canClose = false; return; }
+    var modal = ov.querySelector('.modal');
+    if(!modal){ canClose = false; return; }
+    var onHandle = !!(e.target.closest('.modal-handle'));
+    var atTop = modal.scrollTop <= 0;
+    if(!onHandle && !atTop){ canClose = false; return; }
+    dModal = modal; dOverlay = ov;
+    startY = e.touches[0].clientY;
+    curDelta = 0; dragging = true; canClose = true;
+    modal.style.transition = 'none';
+  }, {passive:true});
+
+  document.addEventListener('touchmove', function(e){
+    if(!dragging || !canClose || !dModal) return;
+    var delta = e.touches[0].clientY - startY;
+    if(delta <= 0){ dModal.style.transform = ''; curDelta = 0; return; }
+    curDelta = delta;
+    dModal.style.transform = 'translateY(' + delta + 'px)';
+    if(e.cancelable) e.preventDefault();
+  }, {passive:false});
+
+  function endDrag(){
+    if(!dragging || !dModal){ dragging = false; return; }
+    var modal = dModal, ov = dOverlay;
+    dragging = false;
+    modal.style.transition = 'transform .25s cubic-bezier(.22,1,.36,1)';
+    if(curDelta > 110){
+      modal.style.transform = 'translateY(100%)';
+      setTimeout(function(){
+        dismiss(ov);
+        modal.style.transition = 'none';
+        modal.style.transform = '';
+      }, 210);
+    } else {
+      modal.style.transform = '';
+    }
+    dModal = null; dOverlay = null; curDelta = 0;
+  }
+  document.addEventListener('touchend', endDrag);
+  document.addEventListener('touchcancel', endDrag);
+})();
 
 /* ═══════════════════════════════════
    PWA — Service Worker + Install Prompt
