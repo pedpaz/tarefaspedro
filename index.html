@@ -3186,7 +3186,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <span class="mais-txt"><span class="mais-t">Configurações & Backup</span><span class="mais-d">Categorias, imóveis, salvar dados</span></span>
     <span class="mais-arrow">›</span>
   </button>
-  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v27</span></div>
+  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v28</span></div>
 </div>
 
 <div class="mass-toolbar" id="mass-toolbar">
@@ -3316,7 +3316,6 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <button type="button" class="btn-template-trigger" id="btn-open-templates">📋 Usar template rápido</button>
     <label class="flabel">Título *</label>
     <input class="finput" id="f-title" type="text" placeholder="Ex: Instalar fechadura…">
-    <div id="cat-suggestion" style="display:none;"></div>
     <label class="flabel">Imóvel / Local</label>
     <select class="finput" id="f-local-sel" onchange="onLocalSelectChange('f')">
       <option value="">— Sem local —</option>
@@ -3352,7 +3351,9 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <span class="cost-currency">R$</span>
       <input id="f-custo" type="number" min="0" step="0.01" placeholder="0,00">
     </div>
-    <select class="finput" id="f-categoria" style="margin-top:8px;"></select>
+    <label class="flabel">Categoria da despesa</label>
+    <select class="finput" id="f-categoria" style="margin-top:2px;"></select>
+    <div id="cat-suggestion" style="display:none;"></div>
     <label class="flabel">Prazo final (opcional)</label>
     <input class="finput" id="f-prazo" type="date">
     <label class="check-done" id="f-done-row">
@@ -3832,12 +3833,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v27</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v28</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v27';
+var APP_VERSION = 'v28';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -9024,7 +9025,7 @@ var CATEGORIA_KEYWORDS = {
   'amenities':    ['amenities','shampoo','sabonete','condicionador','hidratante','kit higiene'],
   'mobilia':      ['móvel','movel','mobília','mobilia','sofá','cama','mesa','cadeira','armário','armario','rack','poltrona'],
   'equipamentos': ['tv','televisão','televisao','geladeira','fogão','fogao','micro-ondas','microondas','airfryer','máquina','maquina','copo','taça','taca','talheres','panela','prato','quadro','equipamento','liquidificador','aspirador','secador'],
-  'energia':      ['conta de luz','conta de energia','energia elétrica','equatorial','enel','celg'],
+  'energia':      ['conta de luz','conta de energia','energia elétrica','energia eletrica','energia','luz da','equatorial','enel','celg'],
   'agua':         ['conta de água','conta de agua','saneago','água'],
   'gas':          ['gás','gas','botijão','botijao'],
   'condominio':   ['condomínio','condominio','taxa condominial'],
@@ -9048,7 +9049,7 @@ function suggestCategoria(){
   }
   if(match){
     var lbl = CATEGORIA_LABELS[match];
-    sug.innerHTML = '💡 Sugiro categoria: <strong>'+lbl+'</strong> <span class="dismiss" data-action="dismiss">✕</span>';
+    sug.innerHTML = '💡 Sugestão pelo título: <strong>'+lbl+'</strong> · toque para usar <span class="dismiss" data-action="dismiss">✕</span>';
     sug.dataset.cat = match;
     sug.style.display = 'block';
   } else {
