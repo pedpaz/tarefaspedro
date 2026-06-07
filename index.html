@@ -2016,14 +2016,18 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
   background:var(--surf-2);
   border:1px solid var(--line);
   border-radius:10px;
-  padding:7px 8px;
-  font-size:10.5px;
-  font-family:var(--font-display);
+  padding:7px 4px;
+  font-size:10px;
+  font-family:var(--font-body);
   font-weight:600;
+  letter-spacing:-.01em;
   color:var(--dim);
   cursor:pointer;
   transition:all .15s;
   white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  text-align:center;
 }
 .dash-pf:hover{border-color:var(--brand);color:var(--brand);}
 .dash-pf.active{
@@ -2956,6 +2960,15 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 .ini-insight-txt b{font-weight:700;}
 
 /* ═══ RELATÓRIOS ═══ */
+.rel-divider{
+  display:flex; align-items:center; gap:10px;
+  font-family:var(--font-body); font-size:10.5px; font-weight:700;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--ink-2);
+  margin:24px 2px 12px;
+}
+.rel-divider::before, .rel-divider::after{
+  content:''; flex:1; height:1px; background:var(--line);
+}
 .rel-hint{font-size:12px;color:var(--dim);line-height:1.55;margin-top:16px;padding:0 6px;text-align:center;}
 
 /* ═══ MAIS ═══ */
@@ -3125,13 +3138,31 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 </div>
 
 <div class="panel" id="panel-relatorios">
-  <button class="btn-dashboard" id="btn-open-dash">📊 Dashboard de gastos</button>
+  <div class="dash-period-row">
+    <button class="dash-pf" data-dp="month">Este mês</button>
+    <button class="dash-pf" data-dp="last">Mês passado</button>
+    <button class="dash-pf" data-dp="3m">3 meses</button>
+    <button class="dash-pf" data-dp="6m">6 meses</button>
+    <button class="dash-pf" data-dp="total">Tudo</button>
+  </div>
+  <div class="dash-summary">
+    <div class="dash-summary-row"><span class="dash-summary-label" id="dash-period-label">—</span></div>
+    <div class="dash-summary-row"><span id="dash-total" class="dash-summary-total">R$ 0,00</span></div>
+    <div class="dash-summary-row"><span id="dash-count" class="dash-summary-count">—</span></div>
+  </div>
+  <h3 class="dash-section-title">📂 Por categoria</h3>
+  <div id="dash-by-category"></div>
+  <h3 class="dash-section-title">🏠 Top imóveis (5)</h3>
+  <div id="dash-by-imovel"></div>
+  <h3 class="dash-section-title">🏷 Por centro de custo</h3>
+  <div id="dash-by-cc"></div>
+
+  <div class="rel-divider">Outros relatórios</div>
   <div class="report-row">
-    <button class="btn-report" id="btn-open-relatorio">📑 Relatório por imóvel</button>
+    <button class="btn-report" id="btn-open-relatorio">📑 Por imóvel</button>
     <button class="btn-report" id="btn-open-proprietarios">💰 Por proprietário</button>
     <button class="btn-report" id="btn-open-pdf">📄 PDF do mês</button>
   </div>
-  <div class="rel-hint">Analise seus gastos por categoria, imóvel ou proprietário, e gere o PDF de fechamento do mês.</div>
 </div>
 
 <div class="panel" id="panel-mais">
@@ -3155,7 +3186,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <span class="mais-txt"><span class="mais-t">Configurações & Backup</span><span class="mais-d">Categorias, imóveis, salvar dados</span></span>
     <span class="mais-arrow">›</span>
   </button>
-  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v26</span></div>
+  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v27</span></div>
 </div>
 
 <div class="mass-toolbar" id="mass-toolbar">
@@ -3571,34 +3602,6 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 </div>
 
 <!-- MODAL: DASHBOARD -->
-<div class="overlay" id="ov-dash">
-  <div class="modal" style="max-width:96vw;max-height:92vh;overflow-y:auto;">
-    <div class="modal-handle"></div>
-    <h2>📊 Dashboard de Gastos</h2>
-    <div class="dash-period-row">
-      <button class="dash-pf" data-dp="month">Este mês</button>
-      <button class="dash-pf" data-dp="last">Mês passado</button>
-      <button class="dash-pf" data-dp="3m">3 meses</button>
-      <button class="dash-pf" data-dp="6m">6 meses</button>
-      <button class="dash-pf" data-dp="total">Tudo</button>
-    </div>
-    <div class="dash-summary">
-      <div class="dash-summary-row"><span class="dash-summary-label" id="dash-period-label">—</span></div>
-      <div class="dash-summary-row"><span id="dash-total" class="dash-summary-total">R$ 0,00</span></div>
-      <div class="dash-summary-row"><span id="dash-count" class="dash-summary-count">—</span></div>
-    </div>
-    <h3 class="dash-section-title">📂 Por categoria</h3>
-    <div id="dash-by-category"></div>
-    <h3 class="dash-section-title">🏠 Top imóveis (5)</h3>
-    <div id="dash-by-imovel"></div>
-    <h3 class="dash-section-title">🏷 Por centro de custo</h3>
-    <div id="dash-by-cc"></div>
-    <div class="btn-row">
-      <button class="btn-s" id="btn-close-dash">Fechar</button>
-    </div>
-  </div>
-</div>
-
 <!-- MODAL: RELATÓRIO POR IMÓVEL -->
 <div class="overlay" id="ov-relatorio">
   <div class="modal" style="max-width:96vw;max-height:92vh;overflow-y:auto;">
@@ -3829,12 +3832,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v26</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v27</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v26';
+var APP_VERSION = 'v27';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -4302,6 +4305,7 @@ function showArea(area){
   syncAreaPanels();
   if(area==='inicio') renderInicio();
   else render();
+  if(area==='relatorios') renderDashboard();
   try{ window.scrollTo(0,0); }catch(e){}
 }
 
@@ -4452,7 +4456,7 @@ function computeInsights(){
     totalMes += v;
     var loc = g.local || 'Sem imóvel';
     gpi[loc] = (gpi[loc]||0) + v;
-    var c = g.cat || 'outros';
+    var c = g.categoria || 'outros';
     cat[c] = (cat[c]||0) + v;
   }
 
@@ -7432,26 +7436,18 @@ document.addEventListener('touchend', function(e){
   swipeState = null;
 }, {passive:true});
 
-// DASHBOARD — botão na aba Gastos + modal
-// DASHBOARD — botão na aba Gastos + modal
-document.getElementById('btn-open-dash').addEventListener('click', openDashboard);
-document.getElementById('btn-close-dash').addEventListener('click', closeDashboard);
-document.querySelectorAll('.dash-pf').forEach(function(btn){
+// DASHBOARD — inline na área Relatórios
+document.querySelectorAll('[data-dp]').forEach(function(btn){
   btn.addEventListener('click', function(){
     dashPeriod = this.dataset.dp;
-    document.querySelectorAll('.dash-pf').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('[data-dp]').forEach(function(b){ b.classList.remove('active'); });
     this.classList.add('active');
     renderDashboard();
   });
 });
-// Set default active
-document.querySelector('.dash-pf[data-dp="month"]').classList.add('active');
-
-function openDashboard(){
-  document.getElementById('ov-dash').classList.add('on');
-  renderDashboard();
-}
-function closeDashboard(){ document.getElementById('ov-dash').classList.remove('on'); }
+// Período padrão: este mês
+var dashDefaultBtn = document.querySelector('[data-dp="month"]');
+if(dashDefaultBtn) dashDefaultBtn.classList.add('active');
 
 function renderDashboard(){
   var range = dashRange();
