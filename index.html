@@ -2923,6 +2923,21 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 .ini-action:hover{border-color:var(--brand);}
 .ini-action:active{transform:scale(.96);}
 
+/* ═══ INSIGHTS (tela Início) ═══ */
+#ini-insights-wrap{margin-bottom:22px;}
+.ini-insight{
+  display:flex; align-items:flex-start; gap:10px;
+  background:var(--surf); border:1px solid var(--line);
+  border-left:3px solid var(--dim-2);
+  border-radius:10px; padding:11px 13px; margin-bottom:7px;
+}
+.ini-insight.warn{border-left-color:var(--divs);}
+.ini-insight.good{border-left-color:var(--brand);}
+.ini-insight.info{border-left-color:var(--gold);}
+.ini-insight-ico{font-size:16px;flex-shrink:0;line-height:1.35;}
+.ini-insight-txt{font-size:12.5px;color:var(--ink);line-height:1.42;}
+.ini-insight-txt b{font-weight:700;}
+
 /* ═══ RELATÓRIOS ═══ */
 .rel-hint{font-size:12px;color:var(--dim);line-height:1.55;margin-top:16px;padding:0 6px;text-align:center;}
 
@@ -2998,6 +3013,10 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <div class="ini-card-value gold" id="ini-gastos-value">—</div>
       <div class="ini-card-sub" id="ini-gastos-sub"></div>
     </button>
+  </div>
+  <div id="ini-insights-wrap">
+    <div class="ini-section-title">💡 Insights</div>
+    <div id="ini-insights"></div>
   </div>
   <div class="ini-section-title">Próximas pendências</div>
   <div id="ini-pendencias"></div>
@@ -3119,7 +3138,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <span class="mais-txt"><span class="mais-t">Configurações & Backup</span><span class="mais-d">Categorias, imóveis, salvar dados</span></span>
     <span class="mais-arrow">›</span>
   </button>
-  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v24</span></div>
+  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v25</span></div>
 </div>
 
 <div class="mass-toolbar" id="mass-toolbar">
@@ -3793,12 +3812,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v24</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v25</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v24';
+var APP_VERSION = 'v25';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -4351,9 +4370,113 @@ function renderInicio(){
     }
     el.innerHTML = html;
   }
+  renderInsights();
 }
 
-/* Início — pendência abre edição da tarefa */
+/* ═══ INSIGHTS — padrões automáticos ═══ */
+function catNomeInsight(cat){
+  for(var i=0;i<categorias.length;i++){
+    if(categorias[i].id===cat) return (categorias[i].emoji?categorias[i].emoji+' ':'')+categorias[i].label;
+  }
+  return cat;
+}
+function computeInsights(){
+  var out = [];
+  var todayYmd = new Date().toISOString().slice(0,10);
+  var now = new Date();
+  var ym = now.toISOString().slice(0,7);
+  var mesNome = now.toLocaleDateString('pt-BR',{month:'long'});
+
+  // 1. Atrasadas há mais de 7 dias
+  var oldOverdue = 0, oldestDays = 0, oldestTitle = '';
+  for(var i=0;i<tasks.length;i++){
+    var t = tasks[i];
+    if(t.done || !t.prazo) continue;
+    if(t.prazo < todayYmd){
+      var days = Math.floor((new Date(todayYmd).getTime() - new Date(t.prazo).getTime())/86400000);
+      if(days >= 7){ oldOverdue++; if(days > oldestDays){ oldestDays = days; oldestTitle = t.t; } }
+    }
+  }
+  if(oldOverdue > 0){
+    out.push({ico:'⚠️', tone:'warn', text:'<b>'+oldOverdue+' tarefa'+(oldOverdue>1?'s':'')+'</b> atrasada'+(oldOverdue>1?'s':'')+' há mais de 7 dias. A mais antiga: "'+x(oldestTitle)+'" ('+oldestDays+' dias).'});
+  }
+
+  // 2. Imóvel com muitas tarefas em 30 dias
+  var d30 = now.getTime() - 30*86400000;
+  var tpi = {};
+  for(var i=0;i<tasks.length;i++){
+    var t = tasks[i];
+    if(!t.local || !t.ts) continue;
+    if(t.ts >= d30) tpi[t.local] = (tpi[t.local]||0) + 1;
+  }
+  var busyImovel=null, busyCount=0;
+  for(var k in tpi){ if(tpi[k] > busyCount){ busyCount = tpi[k]; busyImovel = k; } }
+  if(busyImovel && busyCount >= 3){
+    out.push({ico:'🔧', tone:'warn', text:'<b>'+x(busyImovel)+'</b> teve <b>'+busyCount+' tarefas</b> em 30 dias — pode estar dando trabalho.'});
+  }
+
+  // 3. Gastos do mês: total, por imóvel, por categoria
+  var gpi = {}, cat = {}, totalMes = 0;
+  for(var i=0;i<gastos.length;i++){
+    var g = gastos[i];
+    if(new Date(g.ts).toISOString().slice(0,7) !== ym) continue;
+    var v = parseFloat(g.valor)||0;
+    totalMes += v;
+    var loc = g.local || 'Sem imóvel';
+    gpi[loc] = (gpi[loc]||0) + v;
+    var c = g.cat || 'outros';
+    cat[c] = (cat[c]||0) + v;
+  }
+
+  // 4. Tendência vs mês passado
+  var prevDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  var ymPrev = prevDate.toISOString().slice(0,7);
+  var totalPrev = 0;
+  for(var i=0;i<gastos.length;i++){
+    if(new Date(gastos[i].ts).toISOString().slice(0,7) === ymPrev) totalPrev += parseFloat(gastos[i].valor)||0;
+  }
+  if(totalPrev > 0 && totalMes > 0){
+    var diff = ((totalMes - totalPrev)/totalPrev)*100;
+    if(diff >= 20) out.push({ico:'📈', tone:'warn', text:capitalize(mesNome)+' está <b>'+Math.round(diff)+'% acima</b> do mês passado em gastos.'});
+    else if(diff <= -20) out.push({ico:'📉', tone:'good', text:capitalize(mesNome)+' está <b>'+Math.abs(Math.round(diff))+'% abaixo</b> do mês passado — bom controle.'});
+  }
+
+  // 5. Imóvel que mais gastou
+  var topImovel=null, topImovelVal=0;
+  for(var k in gpi){ if(gpi[k] > topImovelVal){ topImovelVal = gpi[k]; topImovel = k; } }
+  if(topImovel && topImovelVal > 0 && Object.keys(gpi).length > 1){
+    out.push({ico:'💸', tone:'info', text:'<b>'+x(topImovel)+'</b> é o imóvel que mais gastou em '+mesNome+': <b>'+brl(topImovelVal)+'</b>.'});
+  }
+
+  // 6. Categoria líder
+  var topCat=null, topCatVal=0;
+  for(var k in cat){ if(cat[k] > topCatVal){ topCatVal = cat[k]; topCat = k; } }
+  if(topCat && topCatVal > 0 && Object.keys(cat).length > 1){
+    out.push({ico:'📊', tone:'info', text:'Maior categoria em '+mesNome+': <b>'+x(catNomeInsight(topCat))+'</b> ('+brl(topCatVal)+').'});
+  }
+
+  // Estado positivo se nada relevante
+  if(out.length === 0){
+    out.push({ico:'✅', tone:'good', text:'Operação tranquila — nada fora do padrão por aqui.'});
+  }
+  return out.slice(0, 3);
+}
+function capitalize(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+function renderInsights(){
+  var el = document.getElementById('ini-insights');
+  if(!el) return;
+  var list = computeInsights();
+  var html = '';
+  for(var i=0;i<list.length;i++){
+    var it = list[i];
+    html += '<div class="ini-insight '+it.tone+'">'+
+      '<span class="ini-insight-ico">'+it.ico+'</span>'+
+      '<span class="ini-insight-txt">'+it.text+'</span>'+
+    '</div>';
+  }
+  el.innerHTML = html;
+}
+
 document.getElementById('ini-pendencias').addEventListener('click', function(e){
   var item = e.target.closest('.ini-pend-item');
   if(!item) return;
