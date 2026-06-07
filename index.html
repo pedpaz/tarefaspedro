@@ -2923,6 +2923,23 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
 .ini-action:hover{border-color:var(--brand);}
 .ini-action:active{transform:scale(.96);}
 
+/* ═══ CONCLUÍDAS RECOLHÍVEIS ═══ */
+.done-collapse{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  cursor:pointer; user-select:none;
+  padding:9px 13px; margin:10px 0 4px;
+  background:var(--surf-2); border:1px solid var(--line);
+  border-radius:9px;
+  font-family:var(--font-body); font-size:10.5px; font-weight:700;
+  letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2);
+  transition:transform .1s, border-color .15s;
+}
+.done-collapse:hover{border-color:var(--brand);}
+.done-collapse:active{transform:scale(.99);}
+.done-chevron{font-size:11px; color:var(--dim); transition:transform .2s;}
+.done-collapse.open .done-chevron{transform:rotate(180deg);}
+.done-cards{margin-top:4px;}
+
 /* ═══ INSIGHTS (tela Início) ═══ */
 #ini-insights-wrap{margin-bottom:22px;}
 .ini-insight{
@@ -3138,7 +3155,7 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
     <span class="mais-txt"><span class="mais-t">Configurações & Backup</span><span class="mais-d">Categorias, imóveis, salvar dados</span></span>
     <span class="mais-arrow">›</span>
   </button>
-  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v25</span></div>
+  <div class="mais-version">Hub Pedro · <span id="mais-version-label">v26</span></div>
 </div>
 
 <div class="mass-toolbar" id="mass-toolbar">
@@ -3812,12 +3829,12 @@ select.finput{appearance:none;-webkit-appearance:none;background-image:url("data
       <p class="backup-info" style="margin-top:8px;">Obtenha uma key em console.anthropic.com → API Keys. Fica salva só no seu dispositivo.</p>
     </div>
     <button class="btn-s" style="width:100%;margin-top:4px;" id="btn-close-backup">Fechar</button>
-    <div id="version-footer">Hub Pedro · <span id="version-label">v25</span></div>
+    <div id="version-footer">Hub Pedro · <span id="version-label">v26</span></div>
   </div>
 </div>
 
 <script>
-var APP_VERSION = 'v25';
+var APP_VERSION = 'v26';
 var SK='pedro_v4', GK='pedro_gastos_v3', PK='pedro_pessoas_v1', LK='pedro_locais_v1', BK='pedro_predios_v1', CK='pedro_categorias_v1';
 function n(){ return Math.random().toString(36).slice(2,11); }
 function brl(v){ return 'R$ '+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
@@ -4292,6 +4309,17 @@ document.getElementById('bottom-nav').addEventListener('click', function(e){
   var item = e.target.closest('.bn-item');
   if(!item) return;
   showArea(item.dataset.area);
+});
+
+/* Recolher/expandir seções de concluídas */
+document.addEventListener('click', function(e){
+  var h = e.target.closest('.done-collapse');
+  if(!h) return;
+  var target = document.getElementById(h.dataset.target);
+  if(!target) return;
+  var isOpen = target.style.display !== 'none';
+  target.style.display = isOpen ? 'none' : 'block';
+  h.classList.toggle('open', !isOpen);
 });
 
 /* ═══ TELA INÍCIO ═══ */
@@ -6779,7 +6807,13 @@ function section(pendId, doneId, list){
   var de = document.getElementById(doneId);
   if(pend.length) pe.innerHTML = '<div class="slabel">Pendentes</div>' + pend.map(cardHtml).join('');
   else pe.innerHTML = done.length ? '' : '<div class="empty"><span>🗒️</span>Nenhuma tarefa ainda</div>';
-  de.innerHTML = done.length ? '<div class="slabel">Concluídas</div>' + done.map(cardHtml).join('') : '';
+  if(done.length){
+    var tid = doneId+'-cards';
+    de.innerHTML = '<div class="done-collapse" data-target="'+tid+'">'+
+        '<span>✓ Concluídas ('+done.length+')</span><span class="done-chevron">▾</span>'+
+      '</div>'+
+      '<div class="done-cards" id="'+tid+'" style="display:none;">' + done.map(cardHtml).join('') + '</div>';
+  } else de.innerHTML = '';
 }
 
 function getLocalInfo(localName){
@@ -6793,6 +6827,7 @@ function getLocalInfo(localName){
 function sectionGroupedByLocal(containerId, list){
   var el = document.getElementById(containerId);
   if(!list.length){ el.innerHTML='<div class="empty"><span>🗒️</span>Nenhuma tarefa ainda</div>'; return; }
+  var doneUid = 0;
 
   // First level: group by predio
   // Second level: group by local within predio
@@ -6851,7 +6886,19 @@ function sectionGroupedByLocal(containerId, list){
       var items = byLocal[localName];
       var done = 0; for(var i=0;i<items.length;i++) if(items[i].done) done++;
       var pct = Math.round(done/items.length*100);
-      var cards = ''; for(var i=0;i<items.length;i++) cards+=cardHtml(items[i]);
+      var pendItems = [], doneItems = [];
+      for(var i=0;i<items.length;i++){ items[i].done ? doneItems.push(items[i]) : pendItems.push(items[i]); }
+      var cards = '';
+      for(var i=0;i<pendItems.length;i++) cards += cardHtml(pendItems[i]);
+      if(doneItems.length){
+        var tid = 'dc-' + (doneUid++);
+        cards += '<div class="done-collapse" data-target="'+tid+'">'+
+            '<span>✓ '+doneItems.length+' concluída'+(doneItems.length>1?'s':'')+'</span><span class="done-chevron">▾</span>'+
+          '</div>'+
+          '<div class="done-cards" id="'+tid+'" style="display:none;">';
+        for(var i=0;i<doneItems.length;i++) cards += cardHtml(doneItems[i]);
+        cards += '</div>';
+      }
       var localLbl = (localName==='__nolocal__') ? 'Sem local definido' : localName;
       var localIcon = (localName==='__nolocal__') ? '📋' : '📍';
       html += '<div class="local-block">'+
